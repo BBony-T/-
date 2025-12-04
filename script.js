@@ -24,6 +24,7 @@ import {
   where,
   orderBy,
   doc,
+  deleteDoc,
   serverTimestamp,
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 import {
@@ -90,9 +91,9 @@ const randomCategoryLabel = document.getElementById("random-category-label");
 const randomMessageText = document.getElementById("random-message-text");
 const randomMessageAuthor = document.getElementById("random-message-author");
 
-const certifyForm = document.getElementById("certify-form");
+const certifyForm = document.getElementById("certifyForm");
 const nicknameInput = document.getElementById("nickname");
-const messageInput = document.getElementById("message");
+const messageInput = document.getElementById("certifyMessage");
 
 const recordsContainer = document.getElementById("records-container");
 const topUserInfo = document.getElementById("top-user-info");
@@ -131,6 +132,7 @@ function getTodayString() {
   return `${year}-${month}-${day}`;
 }
 
+
 function getNowDateTimeString() {
   const now = new Date();
   const year = now.getFullYear();
@@ -145,33 +147,65 @@ function getNowDateTimeString() {
 /* ==============================
    2. Firebase 인증 기록 관리
    ============================== */
+// 🔹 인증 하나를 Firestore + Storage에 저장
+async function addCertificationToFirebase(nickname, message, missionType, imageDataUrl) {
+  // 1) 최소한 익명 로그인 보장
+  await ensureAnonymousLogin();
 
-// Firestore에서 오늘 기록 가져오기
-async function fetchTodayRecords() {
   const today = getTodayString();
-  const q = query(
+
+  // 2) Firestore에 기본 정보 먼저 저장
+  const baseDoc = {
+    nickname,
+    message,
+    missionType: missionType || null,
+    date: today,
+    timestamp: serverTimestamp(), // 서버 기준 시간
+  };
+
+  const colRef = collection(db, "certifications");
+  const docRef = await addDoc(colRef, baseDoc);
+
+  // 3) 사진이 있는 경우 Storage 업로드 + URL 업데이트
+  if (imageDataUrl) {
+    const imagePath = `certifications/${today}/${docRef.id}.jpg`;
+    const storageRef = ref(storage, imagePath);
+
+    // data URL 그대로 업로드
+    await uploadString(storageRef, imageDataUrl, "data_url");
+    const imageUrl = await getDownloadURL(storageRef);
+
+    await updateDoc(docRef, {
+      imagePath,
+      imageUrl,
+    });
+  }
+
+  return docRef.id;
+}
+//위쪽까지가 새로 추가한 것 B-1의 핵심
+// Firestore에서 오늘 기록 가져오기//기존 것 삭제fetchTodayRecords 함수
+// 🔹 오늘 날짜의 인증 기록들만 Firestore에서 가져오기(새로 추가 B-2)
+async function fetchTodayCertifications() {
+  const today = getTodayString();
+
+  const qRef = query(
     collection(db, "certifications"),
     where("date", "==", today),
-    orderBy("createdAt", "desc")
+    orderBy("timestamp", "desc")
   );
-  const snap = await getDocs(q);
 
+  const snap = await getDocs(qRef);
   const records = [];
   snap.forEach((docSnap) => {
-    const data = docSnap.data();
     records.push({
       id: docSnap.id,
-      nickname: data.nickname || "",
-      message: data.message || "",
-      timestamp: data.timestamp || "",
-      date: data.date || "",
-      imageUrl: data.imageUrl || "",
-      imagePath: data.imagePath || "",
+      ...docSnap.data(),
     });
   });
-
   return records;
 }
+
 
 // 인증 기록 추가: 사진 업로드 → Firestore 문서 생성
 async function addRecordToFirebase(nickname, message, imageDataUrl) {
@@ -210,13 +244,14 @@ async function addRecordToFirebase(nickname, message, imageDataUrl) {
 
 // 특정 기록 삭제 (문서 + 사진)
 async function deleteRecordById(docId, imagePath) {
-  await deleteDoc(doc(db, "certifications", docId));
-  if (imagePath) {
-    try {
-      const fileRef = ref(storage, imagePath);
-      await deleteObject(fileRef);
+    // 1) Firestore에서 문서 삭제
+    await deleteDoc(doc(db, "certifications", docId));
+    // 2) 사진 경로가 있으면 Storage에서도 삭제
+    if (imagePath) {
+     try {
+      await deleteObject(imageRef);
     } catch (e) {
-      console.warn("이미지 삭제 실패(이미 없을 수 있음):", e);
+      console.warn("이미지 삭제 중 오류(이미 없을 수도 있음):", e);
     }
   }
 }
@@ -261,7 +296,7 @@ async function ensureAdminOnce() {
    ============================== */
 
 async function renderRecords() {
-  const records = await fetchTodayRecords();
+  const records = await fetchTodayCertifications();
 
   // 닉네임별 인증 횟수 계산
   const counts = {};
@@ -343,7 +378,7 @@ async function renderRecords() {
     const leftBox = document.createElement("div");
     leftBox.className = "record-left";
 
-    // ✅ 선택 삭제를 위한 체크박스 (관리자 모드일 때만 CSS로 표시)
+    // ✅ 선택 삭제를 위한 체크박스 (관리자 선택 모드일 때만 CSS로 표시)
     const checkbox = document.createElement("input");
     checkbox.type = "checkbox";
     checkbox.className = "record-select";
@@ -352,11 +387,12 @@ async function renderRecords() {
 
     const nicknameSpan = document.createElement("span");
     nicknameSpan.className = "record-nickname";
-    nicknameSpan.textContent = record.nickname;
+    nicknameSpan.textContent = record.nickname || "이름없음";
 
     const badgeSpan = document.createElement("span");
     badgeSpan.className = "record-badge";
-    const nicknameCount = counts[record.nickname] || 1;
+    const nicknameKey = record.nickname || "이름없음";
+    const nicknameCount = counts[nicknameKey] || 1;
     badgeSpan.textContent = `${nicknameCount}회`;
 
     // 체크박스 → 닉네임 → 뱃지 순서로 왼쪽에 넣기
@@ -371,22 +407,21 @@ async function renderRecords() {
 
     const timeSpan = document.createElement("span");
     timeSpan.className = "record-timestamp";
-    timeSpan.textContent = record.timestamp;
-    rightBox.appendChild(timeSpan);
 
-    // 관리자 모드일 때만 삭제 버튼 표시
-    if (isAdminMode) {
-      const delBtn = document.createElement("button");
-      delBtn.className = "record-delete-btn";
-      delBtn.textContent = "삭제";
-      delBtn.addEventListener("click", async () => {
-        const ok = confirm("정말 이 인증 기록을 삭제할까요?");
-        if (!ok) return;
-        await deleteRecordById(record.id, record.imagePath);
-        await renderRecords();
-      });
-      rightBox.appendChild(delBtn);
+    // 🔹 Firestore Timestamp → "HH:MM" 문자열로 변환
+    if (record.timestamp && record.timestamp.toDate) {
+      const dt = record.timestamp.toDate();
+      const hh = String(dt.getHours()).padStart(2, "0");
+      const mm = String(dt.getMinutes()).padStart(2, "0");
+      timeSpan.textContent = `${hh}:${mm}`;
+    } else if (typeof record.timestamp === "string") {
+      // 혹시 문자열로 저장된 경우가 섞여 있으면 그대로 표시
+      timeSpan.textContent = record.timestamp;
+    } else {
+      timeSpan.textContent = "";
     }
+
+    rightBox.appendChild(timeSpan);
 
     header.appendChild(leftBox);
     header.appendChild(rightBox);
@@ -400,7 +435,7 @@ async function renderRecords() {
 
     if (record.imageUrl) {
       const img = document.createElement("img");
-      img.className = "record-photo";
+      img.className = "record-photo";  // 기존 CSS에 맞춰서 유지
       img.src = record.imageUrl;
       img.alt = "인증 사진";
       item.appendChild(img);
@@ -409,6 +444,7 @@ async function renderRecords() {
     recordsContainer.appendChild(item);
   });
 }
+
 
 /* ==============================
    4. 화면 전환 및 카메라
@@ -879,6 +915,9 @@ certifyForm.addEventListener("submit", async (event) => {
 
   const nickname = nicknameInput.value.trim();
   const message = messageInput.value.trim();
+  const missionType = currentMissionType || null; // 없으면 null로 두고, 변수 없으면 이 줄은 삭제해도 됨.
+  const imageDataUrl = lastCapturedImageDataUrl || null;
+
 
   if (!nickname || !message) {
     alert("닉네임과 인증 문구를 모두 입력해 주세요.");
@@ -886,12 +925,17 @@ certifyForm.addEventListener("submit", async (event) => {
   }
 
   try {
-    await addRecordToFirebase(nickname, message, lastCapturedImageDataUrl);
+    await addCertificationToFirebase(nickname, message, lastCapturedImageDataUrl);
+
+    alert("인증이 저장되었습니다! 🎉");
+    //입력값 초기화
     nicknameInput.value = "";
     messageInput.value = "";
     lastCapturedImageDataUrl = null;
-    showSuccessToast();
-    showView("list");
+
+    // 인증자 목록 화면으로 이동 + 새로 렌더
+    showView("list");// 이미 있는 화면 전환 함수라 가정
+    await renderRecords();//중복확인필요함1. 3개나 있는데 상관없는지..
   } catch (e) {
     console.error(e);
     alert("인증 저장 중 오류가 발생했습니다. 다시 시도해 주세요.");
