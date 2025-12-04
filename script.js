@@ -789,111 +789,115 @@ function showSuccessToast() {
 
 //관리자 모드 함수 토글은 삭제함
 // 🗑 선택 삭제(관리자용) 버튼 클릭 핸들러
-btnDeleteSelected.addEventListener("click", async () => {
-  try {
-    // 1) 관리자 확인
-    await ensureAdminOnce();
-  } catch (e) {
-    // 로그인 실패 또는 취소
-    return;
-  }
+if (btnDeleteSelected) {
+    btnDeleteSelected.addEventListener("click", async () => {
+    try {
+     // 1) 관리자 확인
+        await ensureAdminOnce();
+     } catch (e) {
+     // 로그인 실패 또는 취소
+     return;
+     }
 
-  // 2) 첫 클릭이면 "선택 모드"로 전환만 하고 안내
-  if (!isAdminSelectionMode) {
-    isAdminSelectionMode = true;
-    document.body.classList.add("admin-selection-mode");
-    // 전체 삭제 버튼도 이때부터 보이게
-    if (btnDeleteAllRecords) {
-      btnDeleteAllRecords.style.display = "inline-block";
-    }
-    alert(
-      "삭제할 인증을 선택한 뒤,\n다시 한 번 '선택 삭제(관리자용)' 버튼을 눌러 주세요."
-    );
-    return;
-  }
+     // 2) 첫 클릭이면 "선택 모드"로 전환만 하고 안내
+     if (!isAdminSelectionMode) {
+     isAdminSelectionMode = true;
+     document.body.classList.add("admin-selection-mode");
+      // 전체 삭제 버튼도 이때부터 보이게
+        if (btnDeleteAllRecords) {
+       btnDeleteAllRecords.style.display = "inline-block";
+     }
+     alert(
+       "삭제할 인증을 선택한 뒤,\n다시 한 번 '선택 삭제(관리자용)' 버튼을 눌러 주세요."
+     );
+     return;
+     }
 
-  // 3) 이미 선택 모드라면 실제 삭제 수행
-  const checked = document.querySelectorAll(".record-select:checked");
-  if (!checked.length) {
-    alert("삭제할 인증을 먼저 선택해 주세요.");
-    return;
-  }
+     // 3) 이미 선택 모드라면 실제 삭제 수행
+    const checked = document.querySelectorAll(".record-select:checked");
+    if (!checked.length) {
+      alert("삭제할 인증을 먼저 선택해 주세요.");
+     return;
+     }
 
-  if (!confirm(`선택한 ${checked.length}개의 인증을 삭제할까요?`)) {
-    return;
-  }
+     if (!confirm(`선택한 ${checked.length}개의 인증을 삭제할까요?`)) {
+     return;
+     }
 
-  try {
-    const deletePromises = [];
-    checked.forEach((cb) => {
-      const docId = cb.dataset.docId;
-      const imagePath = cb.dataset.imagePath || "";
-      deletePromises.push(deleteRecordById(docId, imagePath));
+     try {
+     const deletePromises = [];
+     checked.forEach((cb) => {
+       const docId = cb.dataset.docId;
+          const imagePath = cb.dataset.imagePath || "";
+       deletePromises.push(deleteRecordById(docId, imagePath));
+     });
+     await Promise.all(deletePromises);
+
+     alert("선택한 인증이 삭제되었습니다.");
+     } catch (e) {
+     console.error("선택 삭제 중 오류:", e);
+     alert("선택 삭제 중 오류가 발생했습니다.");
+     } finally {
+     // 선택 모드 해제
+     isAdminSelectionMode = false;
+     document.body.classList.remove("admin-selection-mode");
+     if (btnDeleteAllRecords) {
+       btnDeleteAllRecords.style.display = "none";
+     }
+     // 최신 목록 다시 불러오기
+     await renderRecords();
+     // 관리자 로그인 유지/해제는 상황에 따라 선택
+        // 한 번 한 번 확인하고 싶다면 아래 주석을 풀어 사용:
+     // await signOut(auth);
+     // await ensureAnonymousLogin();
+      }
     });
-    await Promise.all(deletePromises);
-
-    alert("선택한 인증이 삭제되었습니다.");
-  } catch (e) {
-    console.error("선택 삭제 중 오류:", e);
-    alert("선택 삭제 중 오류가 발생했습니다.");
-  } finally {
-    // 선택 모드 해제
-    isAdminSelectionMode = false;
-    document.body.classList.remove("admin-selection-mode");
-    if (btnDeleteAllRecords) {
-      btnDeleteAllRecords.style.display = "none";
-    }
-    // 최신 목록 다시 불러오기
-    await renderRecords();
-    // 관리자 로그인 유지/해제는 상황에 따라 선택
-    // 한 번 한 번 확인하고 싶다면 아래 주석을 풀어 사용:
-    // await signOut(auth);
-    // await ensureAnonymousLogin();
-  }
-});
+}    
 
 // 🗑 모든 기록 전체 삭제 (관리자용) 버튼
-btnDeleteAllRecords.addEventListener("click", async () => {
-  try {
-    // 1) 관리자 확인
-    await ensureAdminOnce();
-  } catch (e) {
-    return;
-  }
+if (btnDeleteAllRecords) {
+    btnDeleteAllRecords.addEventListener("click", async () => {
+    try {
+        // 1) 관리자 확인
+     await ensureAdminOnce();
+      } catch (e) {
+     return;
+    }
 
-  if (
-    !confirm(
-      "정말 모든 인증 기록을 삭제할까요?\n(오늘 기록까지 포함하여 전체 삭제됩니다.)"
-    )
-  ) {
-    return;
-  }
+     if (
+        !confirm(
+         "정말 모든 인증 기록을 삭제할까요?\n(오늘 기록까지 포함하여 전체 삭제됩니다.)"
+     )
+     ) {
+        return;
+    }
 
-  try {
-    // certifications 컬렉션 전체 조회
-    const snap = await getDocs(collection(db, "certifications"));
-    const deletePromises = [];
-    snap.forEach((docSnap) => {
-      const data = docSnap.data();
-      const imagePath = data.imagePath || "";
-      deletePromises.push(deleteRecordById(docSnap.id, imagePath));
+     try {
+        // certifications 컬렉션 전체 조회
+        const snap = await getDocs(collection(db, "certifications"));
+        const deletePromises = [];
+        snap.forEach((docSnap) => {
+         const data = docSnap.data();
+         const imagePath = data.imagePath || "";
+         deletePromises.push(deleteRecordById(docSnap.id, imagePath));
+        });
+
+        await Promise.all(deletePromises);
+        alert("모든 인증 기록이 삭제되었습니다.");
+
+        // 선택 모드도 초기화
+     isAdminSelectionMode = false;
+     document.body.classList.remove("admin-selection-mode");
+     btnDeleteAllRecords.style.display = "none";
+
+     await renderRecords();
+        // 필요하면 여기서도 signOut + 익명로그인으로 되돌릴 수 있음
+     } catch (e) {
+     console.error("전체 삭제 중 오류:", e);
+     alert("전체 삭제 중 오류가 발생했습니다.");
+     }
     });
-
-    await Promise.all(deletePromises);
-    alert("모든 인증 기록이 삭제되었습니다.");
-
-    // 선택 모드도 초기화
-    isAdminSelectionMode = false;
-    document.body.classList.remove("admin-selection-mode");
-    btnDeleteAllRecords.style.display = "none";
-
-    await renderRecords();
-    // 필요하면 여기서도 signOut + 익명로그인으로 되돌릴 수 있음
-  } catch (e) {
-    console.error("전체 삭제 중 오류:", e);
-    alert("전체 삭제 중 오류가 발생했습니다.");
-  }
-});
+}
 
 
 /* ==============================
