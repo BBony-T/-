@@ -149,25 +149,50 @@ function getNowDateTimeString() {
    ============================== */
 // 🔹 인증 하나를 Firestore + Storage에 저장
 
-// 🔹 Firestore에 텍스트 기록만 저장 (사진은 일단 보류 버전)
-// 🔹 오늘 인증 기록을 Firestore에 저장 (사진은 일단 제외, 텍스트만)
-async function addCertificationToFirebase(nickname, message) {
-  // 0) 익명 로그인 보장
+// 🔹 오늘 인증 기록을 Firestore에 저장 (사진은 일단 제외, 텍스트만)->해결
+// 🔹 인증 하나를 Firestore + Storage에 저장
+async function addCertificationToFirebase(
+  nickname,
+  message,
+  missionType,
+  imageDataUrl
+) {
+  // 1) 최소한 익명 로그인 보장
   await ensureAnonymousLogin();
 
   const today = getTodayString();
 
-  // certifications 컬렉션에 문서 하나 추가
-  const colRef = collection(db, "certifications");
-  const docRef = await addDoc(colRef, {
+  // 2) Firestore에 기본 정보 먼저 저장
+  const baseDoc = {
     nickname,
     message,
+    missionType: missionType || null,
     date: today,
-    timestamp: serverTimestamp(),  // 서버 기준 시간
-  });
+    timestamp: serverTimestamp(), // 서버 기준 시간
+  };
 
-  console.log("📌 Firestore 문서 생성됨:", docRef.id);
+  const colRef = collection(db, "certifications");
+  const docRef = await addDoc(colRef, baseDoc);
+
+  // 3) 사진이 있는 경우 Storage 업로드 + URL 업데이트
+  if (imageDataUrl) {
+    // 날짜/문서ID 기준으로 저장
+    const imagePath = `certifications/${today}/${docRef.id}.jpg`;
+    const imageRef = ref(storage, imagePath);
+
+    // data URL 그대로 업로드
+    await uploadString(imageRef, imageDataUrl, "data_url");
+    const imageUrl = await getDownloadURL(imageRef);
+
+    await updateDoc(docRef, {
+      imagePath,
+      imageUrl,
+    });
+  }
+
+  return docRef.id;
 }
+
 
 
 
@@ -212,42 +237,10 @@ async function fetchTodayCertifications() {
 }
 
 
-// 인증 기록 추가: 사진 업로드 → Firestore 문서 생성
-async function addRecordToFirebase(nickname, message, imageDataUrl) {
-  await ensureAnonymousLogin();
+// 인증 기록 추가: 사진 업로드 → Firestore 문서 생성addRecordToFirebase함수삭제
 
-  let imageUrl = "";
-  let imagePath = "";
 
-  if (imageDataUrl) {
-    // dataURL -> Blob
-    const res = await fetch(imageDataUrl);
-    const blob = await res.blob();
-
-    const uid = auth.currentUser ? auth.currentUser.uid : "anonymous";
-    const fileName = `${Date.now()}.jpg`;
-    const fileRef = ref(storage, `certifications/${uid}/${fileName}`);
-
-    await uploadBytes(fileRef, blob);
-    imageUrl = await getDownloadURL(fileRef);
-    imagePath = fileRef.fullPath;
-  }
-
-  const docData = {
-    nickname,
-    message,
-    timestamp: getNowDateTimeString(),
-    date: getTodayString(),
-    imageUrl,
-    imagePath,
-    createdAt: serverTimestamp(),
-    userId: auth.currentUser ? auth.currentUser.uid : null,
-  };
-
-  await addDoc(collection(db, "certifications"), docData);
-}
-
-// 특정 기록 삭제 (문서 + 사진)
+// 특정 기록 삭제 (문서 + 사진)deleteRecordById
 async function deleteRecordById(docId, imagePath) {
   // 1) Firestore에서 문서 삭제
   await deleteDoc(doc(db, "certifications", docId));
@@ -255,13 +248,14 @@ async function deleteRecordById(docId, imagePath) {
   // 2) 사진 경로가 있으면 Storage에서도 삭제
   if (imagePath) {
     try {
-      const imageRef = ref(storage, imagePath); // 🔹 경로로 ref 생성
+      const imageRef = ref(storage, imagePath);
       await deleteObject(imageRef);
     } catch (e) {
       console.warn("이미지 삭제 중 오류(이미 없을 수도 있음):", e);
     }
   }
 }
+
 
 
 // 현재 로그인한 유저가 관리자 이메일인지 체크
