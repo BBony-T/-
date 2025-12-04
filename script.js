@@ -909,7 +909,6 @@ if (btnDeleteAllRecords) {
    7. 이벤트 바인딩 & 초기화
    ============================== */
 
-// 페이지 로딩이 끝난 뒤에 한꺼번에 이벤트 연결 + 초기화
 document.addEventListener("DOMContentLoaded", () => {
   // 1) 화면 전환 버튼들
   if (btnGoCertify) {
@@ -935,11 +934,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // 3) 인증 폼 제출
   if (certifyForm) {
+    console.log("✅ certifyForm found, submit handler attached.");
     certifyForm.addEventListener("submit", async (event) => {
       event.preventDefault();
+      console.log("📩 submit fired");
 
       const nickname = nicknameInput.value.trim();
-      const message = messageInput.value.trim();
+      const message  = messageInput.value.trim();
       const imageDataUrl = lastCapturedImageDataUrl || null;
 
       if (!nickname || !message) {
@@ -948,12 +949,14 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       try {
+        console.log("🔥 addCertificationToFirebase 호출 직전");
         await addCertificationToFirebase(
           nickname,
           message,
-          null,              // missionType은 현재 null
+          null,          // missionType은 당장 쓰지 않으니 null
           imageDataUrl
         );
+        console.log("✅ addCertificationToFirebase 완료");
 
         alert("인증이 저장되었습니다! 🎉");
 
@@ -966,10 +969,12 @@ document.addEventListener("DOMContentLoaded", () => {
         showView("list");
         await renderRecords();
       } catch (e) {
-        console.error(e);
+        console.error("❌ 인증 저장 중 오류:", e);
         alert("인증 저장 중 오류가 발생했습니다. 다시 시도해 주세요.");
       }
     });
+  } else {
+    console.warn("⚠ certifyForm 요소를 찾지 못했습니다. id 값을 확인해주세요.");
   }
 
   // 4) 초기 화면 세팅
@@ -979,4 +984,3 @@ document.addEventListener("DOMContentLoaded", () => {
     showView("main");
   })();
 });
-
