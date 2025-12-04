@@ -25,6 +25,7 @@ import {
   doc,
   deleteDoc,
   serverTimestamp,
+  updateDoc,          // 🔹 추가
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 import {
   getStorage,
@@ -32,6 +33,7 @@ import {
   uploadBytes,
   getDownloadURL,
   deleteObject,
+  uploadString,       // 🔹 추가 (addCertificationToFirebase에서 사용)
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js";
 
 /* ==============================
@@ -242,17 +244,20 @@ async function addRecordToFirebase(nickname, message, imageDataUrl) {
 
 // 특정 기록 삭제 (문서 + 사진)
 async function deleteRecordById(docId, imagePath) {
-    // 1) Firestore에서 문서 삭제
-    await deleteDoc(doc(db, "certifications", docId));
-    // 2) 사진 경로가 있으면 Storage에서도 삭제
-    if (imagePath) {
-     try {
+  // 1) Firestore에서 문서 삭제
+  await deleteDoc(doc(db, "certifications", docId));
+
+  // 2) 사진 경로가 있으면 Storage에서도 삭제
+  if (imagePath) {
+    try {
+      const imageRef = ref(storage, imagePath); // 🔹 경로로 ref 생성
       await deleteObject(imageRef);
     } catch (e) {
       console.warn("이미지 삭제 중 오류(이미 없을 수도 있음):", e);
     }
   }
 }
+
 
 // 현재 로그인한 유저가 관리자 이메일인지 체크
 function isCurrentUserAdmin() {
@@ -904,50 +909,74 @@ if (btnDeleteAllRecords) {
    7. 이벤트 바인딩 & 초기화
    ============================== */
 
-btnGoCertify.addEventListener("click", () => showView("certify"));
-btnGoList.addEventListener("click", () => showView("list"));
-btnBackFromCertify.addEventListener("click", () => showView("main"));
-btnBackFromList.addEventListener("click", () => showView("main"));
-
-btnTakePhoto.addEventListener("click", capturePhoto);
-btnRetakePhoto.addEventListener("click", retakePhoto);
-
-certifyForm.addEventListener("submit", async (event) => {
-  event.preventDefault();
-
-  const nickname = nicknameInput.value.trim();
-  const message = messageInput.value.trim();
-  const missionType = currentMissionType || null; // 없으면 null로 두고, 변수 없으면 이 줄은 삭제해도 됨.
-  const imageDataUrl = lastCapturedImageDataUrl || null;
-
-
-  if (!nickname || !message) {
-    alert("닉네임과 인증 문구를 모두 입력해 주세요.");
-    return;
+// 페이지 로딩이 끝난 뒤에 한꺼번에 이벤트 연결 + 초기화
+document.addEventListener("DOMContentLoaded", () => {
+  // 1) 화면 전환 버튼들
+  if (btnGoCertify) {
+    btnGoCertify.addEventListener("click", () => showView("certify"));
+  }
+  if (btnGoList) {
+    btnGoList.addEventListener("click", () => showView("list"));
+  }
+  if (btnBackFromCertify) {
+    btnBackFromCertify.addEventListener("click", () => showView("main"));
+  }
+  if (btnBackFromList) {
+    btnBackFromList.addEventListener("click", () => showView("main"));
   }
 
-  try {
-    await addCertificationToFirebase(nickname, message, lastCapturedImageDataUrl);
-
-    alert("인증이 저장되었습니다! 🎉");
-    //입력값 초기화
-    nicknameInput.value = "";
-    messageInput.value = "";
-    lastCapturedImageDataUrl = null;
-
-    // 인증자 목록 화면으로 이동 + 새로 렌더
-    showView("list");// 이미 있는 화면 전환 함수라 가정
-    await renderRecords();//중복확인필요함1. 3개나 있는데 상관없는지..
-  } catch (e) {
-    console.error(e);
-    alert("인증 저장 중 오류가 발생했습니다. 다시 시도해 주세요.");
+  // 2) 카메라 버튼들
+  if (btnTakePhoto) {
+    btnTakePhoto.addEventListener("click", capturePhoto);
   }
+  if (btnRetakePhoto) {
+    btnRetakePhoto.addEventListener("click", retakePhoto);
+  }
+
+  // 3) 인증 폼 제출
+  if (certifyForm) {
+    certifyForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const nickname = nicknameInput.value.trim();
+      const message = messageInput.value.trim();
+      const imageDataUrl = lastCapturedImageDataUrl || null;
+
+      if (!nickname || !message) {
+        alert("닉네임과 인증 문구를 모두 입력해 주세요.");
+        return;
+      }
+
+      try {
+        await addCertificationToFirebase(
+          nickname,
+          message,
+          null,              // missionType은 현재 null
+          imageDataUrl
+        );
+
+        alert("인증이 저장되었습니다! 🎉");
+
+        // 입력값 초기화
+        nicknameInput.value = "";
+        messageInput.value = "";
+        lastCapturedImageDataUrl = null;
+
+        // 인증자 목록 화면으로 이동 + 새로 렌더
+        showView("list");
+        await renderRecords();
+      } catch (e) {
+        console.error(e);
+        alert("인증 저장 중 오류가 발생했습니다. 다시 시도해 주세요.");
+      }
+    });
+  }
+
+  // 4) 초기 화면 세팅
+  (async () => {
+    await ensureAnonymousLogin();
+    await loadRandomMessagesFromSheet();
+    showView("main");
+  })();
 });
 
-async function init() {
-  await ensureAnonymousLogin();
-  await loadRandomMessagesFromSheet();
-  showView("main");
-}
-
-document.addEventListener("DOMContentLoaded", init);
