@@ -167,6 +167,7 @@ async function addCertificationToFirebase(nickname, message, missionType, imageD
   const docRef = await addDoc(colRef, baseDoc);
 
   // 3) 사진이 있는 경우 Storage 업로드 + URL 업데이트
+  /*
   if (imageDataUrl) {
     const imagePath = `certifications/${today}/${docRef.id}.jpg`;
     const storageRef = ref(storage, imagePath);
@@ -180,6 +181,7 @@ async function addCertificationToFirebase(nickname, message, missionType, imageD
       imageUrl,
     });
   }
+  */
 
   return docRef.id;
 }
