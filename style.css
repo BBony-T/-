@@ -508,3 +508,38 @@ button:active {
   margin-left: auto;
   margin-right: auto;
 }
+
+/* ============================
+   오늘의 인증 순위 TOP 5
+============================ */
+.rankings-container {
+  text-align: center;
+  margin: 4px 0 14px;  /* 🔹 여기서 아래쪽 간격 확보 → 카드랑 떨어짐 */
+}
+
+/* 순위 전체 박스 색은 다른 색 (연분홍 톤) */
+.ranking-box {
+  display: inline-block;
+  text-align: left;
+  padding: 8px 12px;
+  border-radius: 14px;
+  background: #ffeaf2;      /* 🔹 일반 카드와 다른 색 */
+  border: 1px solid #ffc2d6;
+  color: #8a264b;
+  font-size: 0.85rem;
+}
+
+.ranking-title {
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.ranking-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ranking-item {
+  font-size: 0.8rem;
+}

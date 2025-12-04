@@ -32,6 +32,7 @@ const messageInput = document.getElementById("message");
 const recordsContainer = document.getElementById("records-container");
 const topUserInfo = document.getElementById("top-user-info");
 const btnToggleAdmin = document.getElementById("btn-toggle-admin");
+const rankingsContainer = document.getElementById("rankings-container"); // 🆕 추가
 
 // 카메라 관련 요소
 const video = document.getElementById("camera-preview");
@@ -183,14 +184,14 @@ function renderRecords() {
   const data = loadTodayData();
   const records = data.records;
 
-  // 닉네임별 인증 횟수
+  // 닉네임별 인증 횟수 집계
   const counts = {};
   records.forEach((rec) => {
     const name = rec.nickname || "이름없음";
     counts[name] = (counts[name] || 0) + 1;
   });
 
-  // 최다 인증자
+  // 최다 인증자(1위)
   let topNickname = null;
   let topCount = 0;
   for (const [name, count] of Object.entries(counts)) {
@@ -200,6 +201,7 @@ function renderRecords() {
     }
   }
 
+  // 최다 인증자 텍스트
   if (!records.length) {
     topUserInfo.innerHTML = "아직 오늘의 최다 인증자가 없습니다.";
   } else if (topNickname) {
@@ -209,6 +211,40 @@ function renderRecords() {
     `;
   }
 
+  // 🆕 TOP 5 순위 박스 만들기
+  rankingsContainer.innerHTML = "";
+  if (records.length) {
+    // counts 객체 → 배열로 변환 후 정렬
+    const rankingArray = Object.entries(counts)
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count) // 많이한 순
+      .slice(0, 5); // 최대 5명
+
+    if (rankingArray.length) {
+      const box = document.createElement("div");
+      box.className = "ranking-box";
+
+      const title = document.createElement("div");
+      title.className = "ranking-title";
+      title.textContent = "오늘의 인증 순위 TOP 5";
+      box.appendChild(title);
+
+      const list = document.createElement("div");
+      list.className = "ranking-list";
+
+      rankingArray.forEach((item, idx) => {
+        const row = document.createElement("div");
+        row.className = "ranking-item";
+        row.textContent = `${idx + 1}위 ${item.name} (${item.count}회)`;
+        list.appendChild(row);
+      });
+
+      box.appendChild(list);
+      rankingsContainer.appendChild(box);
+    }
+  }
+
+  // 아래는 기존 카드 렌더링 부분
   recordsContainer.innerHTML = "";
 
   if (!records.length) {
@@ -249,7 +285,6 @@ function renderRecords() {
     const timeSpan = document.createElement("span");
     timeSpan.className = "record-timestamp";
     timeSpan.textContent = record.timestamp;
-
     rightBox.appendChild(timeSpan);
 
     // 관리자 모드일 때만 삭제 버튼 표시
