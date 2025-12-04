@@ -96,9 +96,15 @@ const messageInput = document.getElementById("message");
 
 const recordsContainer = document.getElementById("records-container");
 const topUserInfo = document.getElementById("top-user-info");
-const btnToggleAdmin = document.getElementById("btn-toggle-admin");
-const btnDeleteOldRecords = document.getElementById("btn-delete-old-records");
+const btnDeleteSelected = document.getElementById("btn-delete-selected");
+const btnDeleteAllRecords = document.getElementById("btn-delete-all-records");
 const rankingsContainer = document.getElementById("rankings-container");
+
+// 관리자 선택 삭제 모드 여부
+let isAdminSelectionMode = false;
+
+// 관리자 이메일 (Firebase Authentication에 만들어둔 계정)
+const ADMIN_EMAIL = "hyeon.k30@gmail.com"; // → 실제 관리자 이메일로 수정
 
 // 카메라 관련 요소
 const video = document.getElementById("camera-preview");
@@ -215,31 +221,40 @@ async function deleteRecordById(docId, imagePath) {
   }
 }
 
-/* 이전 날짜 전체 삭제 (관리자 전용) */
-async function deleteOldRecords() {
-  if (!isAdminMode) {
-    alert("관리자 모드에서만 사용 가능합니다.");
+// 현재 로그인한 유저가 관리자 이메일인지 체크
+function isCurrentUserAdmin() {
+  return (
+    auth.currentUser &&
+    auth.currentUser.email &&
+    auth.currentUser.email === ADMIN_EMAIL
+  );
+}
+
+// 삭제 버튼을 눌렀을 때, 한 번 관리자 인증을 거치는 함수
+async function ensureAdminOnce() {
+  // 이미 관리자라면 바로 통과
+  if (isCurrentUserAdmin()) {
     return;
   }
-  const ok = confirm("오늘 이전 날짜의 모든 인증 기록을 삭제할까요?");
-  if (!ok) return;
 
-  const today = getTodayString();
-  const q = query(
-    collection(db, "certifications"),
-    where("date", "<", today)
-  );
-  const snap = await getDocs(q);
+  const email = prompt("관리자 이메일을 입력하세요:", ADMIN_EMAIL);
+  if (!email) throw new Error("관리자 이메일 미입력");
 
-  const promises = [];
-  snap.forEach((docSnap) => {
-    const data = docSnap.data();
-    promises.push(deleteRecordById(docSnap.id, data.imagePath || ""));
-  });
+  const password = prompt("관리자 비밀번호를 입력하세요:");
+  if (!password) throw new Error("관리자 비밀번호 미입력");
 
-  await Promise.all(promises);
-  alert("이전 날짜 기록이 정리되었습니다.");
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+    // 로그인이 성공하면 이후 Firestore/Storage delete 권한이 열림
+  } catch (e) {
+    console.error("관리자 로그인 실패:", e);
+    alert("관리자 로그인에 실패했습니다. 이메일/비밀번호를 확인해 주세요.");
+    throw e;
+  }
 }
+
+
+//오래된 기록 삭제(이전버전) 함수가 있던 부위
 
 /* ==============================
    3. 인증자 목록 렌더링 (Firebase 데이터 사용)
@@ -328,6 +343,13 @@ async function renderRecords() {
     const leftBox = document.createElement("div");
     leftBox.className = "record-left";
 
+    // ✅ 선택 삭제를 위한 체크박스 (관리자 모드일 때만 CSS로 표시)
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.className = "record-select";
+    checkbox.dataset.docId = record.id;
+    checkbox.dataset.imagePath = record.imagePath || "";
+
     const nicknameSpan = document.createElement("span");
     nicknameSpan.className = "record-nickname";
     nicknameSpan.textContent = record.nickname;
@@ -337,6 +359,8 @@ async function renderRecords() {
     const nicknameCount = counts[record.nickname] || 1;
     badgeSpan.textContent = `${nicknameCount}회`;
 
+    // 체크박스 → 닉네임 → 뱃지 순서로 왼쪽에 넣기
+    leftBox.appendChild(checkbox);
     leftBox.appendChild(nicknameSpan);
     leftBox.appendChild(badgeSpan);
 
@@ -729,32 +753,114 @@ function showSuccessToast() {
   successToast.classList.add("show");
 }
 
-async function toggleAdminMode() {
-  if (!isAdminMode) {
-    const email = prompt("관리자 이메일을 입력하세요.");
-    if (!email) return;
-    const password = prompt("관리자 비밀번호를 입력하세요.");
-    if (!password) return;
-
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-      isAdminMode = true;
-      btnToggleAdmin.textContent = "관리자 모드 종료";
-      await renderRecords();
-      alert("관리자 모드가 활성화되었습니다.");
-    } catch (e) {
-      console.error(e);
-      alert("로그인에 실패했습니다. 이메일/비밀번호를 확인해 주세요.");
-    }
-  } else {
-    await signOut(auth);
-    await ensureAnonymousLogin();
-    isAdminMode = false;
-    btnToggleAdmin.textContent = "관리자 모드 (삭제)";
-    await renderRecords();
-    alert("관리자 모드를 종료했습니다.");
+//관리자 모드 함수 토글은 삭제함
+// 🗑 선택 삭제(관리자용) 버튼 클릭 핸들러
+btnDeleteSelected.addEventListener("click", async () => {
+  try {
+    // 1) 관리자 확인
+    await ensureAdminOnce();
+  } catch (e) {
+    // 로그인 실패 또는 취소
+    return;
   }
-}
+
+  // 2) 첫 클릭이면 "선택 모드"로 전환만 하고 안내
+  if (!isAdminSelectionMode) {
+    isAdminSelectionMode = true;
+    document.body.classList.add("admin-selection-mode");
+    // 전체 삭제 버튼도 이때부터 보이게
+    if (btnDeleteAllRecords) {
+      btnDeleteAllRecords.style.display = "inline-block";
+    }
+    alert(
+      "삭제할 인증을 선택한 뒤,\n다시 한 번 '선택 삭제(관리자용)' 버튼을 눌러 주세요."
+    );
+    return;
+  }
+
+  // 3) 이미 선택 모드라면 실제 삭제 수행
+  const checked = document.querySelectorAll(".record-select:checked");
+  if (!checked.length) {
+    alert("삭제할 인증을 먼저 선택해 주세요.");
+    return;
+  }
+
+  if (!confirm(`선택한 ${checked.length}개의 인증을 삭제할까요?`)) {
+    return;
+  }
+
+  try {
+    const deletePromises = [];
+    checked.forEach((cb) => {
+      const docId = cb.dataset.docId;
+      const imagePath = cb.dataset.imagePath || "";
+      deletePromises.push(deleteRecordById(docId, imagePath));
+    });
+    await Promise.all(deletePromises);
+
+    alert("선택한 인증이 삭제되었습니다.");
+  } catch (e) {
+    console.error("선택 삭제 중 오류:", e);
+    alert("선택 삭제 중 오류가 발생했습니다.");
+  } finally {
+    // 선택 모드 해제
+    isAdminSelectionMode = false;
+    document.body.classList.remove("admin-selection-mode");
+    if (btnDeleteAllRecords) {
+      btnDeleteAllRecords.style.display = "none";
+    }
+    // 최신 목록 다시 불러오기
+    await renderRecords();
+    // 관리자 로그인 유지/해제는 상황에 따라 선택
+    // 한 번 한 번 확인하고 싶다면 아래 주석을 풀어 사용:
+    // await signOut(auth);
+    // await ensureAnonymousLogin();
+  }
+});
+
+// 🗑 모든 기록 전체 삭제 (관리자용) 버튼
+btnDeleteAllRecords.addEventListener("click", async () => {
+  try {
+    // 1) 관리자 확인
+    await ensureAdminOnce();
+  } catch (e) {
+    return;
+  }
+
+  if (
+    !confirm(
+      "정말 모든 인증 기록을 삭제할까요?\n(오늘 기록까지 포함하여 전체 삭제됩니다.)"
+    )
+  ) {
+    return;
+  }
+
+  try {
+    // certifications 컬렉션 전체 조회
+    const snap = await getDocs(collection(db, "certifications"));
+    const deletePromises = [];
+    snap.forEach((docSnap) => {
+      const data = docSnap.data();
+      const imagePath = data.imagePath || "";
+      deletePromises.push(deleteRecordById(docSnap.id, imagePath));
+    });
+
+    await Promise.all(deletePromises);
+    alert("모든 인증 기록이 삭제되었습니다.");
+
+    // 선택 모드도 초기화
+    isAdminSelectionMode = false;
+    document.body.classList.remove("admin-selection-mode");
+    btnDeleteAllRecords.style.display = "none";
+
+    await renderRecords();
+    // 필요하면 여기서도 signOut + 익명로그인으로 되돌릴 수 있음
+  } catch (e) {
+    console.error("전체 삭제 중 오류:", e);
+    alert("전체 삭제 중 오류가 발생했습니다.");
+  }
+});
+
 
 /* ==============================
    7. 이벤트 바인딩 & 초기화
@@ -767,9 +873,6 @@ btnBackFromList.addEventListener("click", () => showView("main"));
 
 btnTakePhoto.addEventListener("click", capturePhoto);
 btnRetakePhoto.addEventListener("click", retakePhoto);
-
-btnToggleAdmin.addEventListener("click", toggleAdminMode);
-btnDeleteOldRecords.addEventListener("click", deleteOldRecords);
 
 certifyForm.addEventListener("submit", async (event) => {
   event.preventDefault();

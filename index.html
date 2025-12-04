@@ -121,13 +121,20 @@
         </p>
 
         <div class="list-actions">
-          <button id="btn-toggle-admin" class="mini-btn">
-            관리자 모드 (삭제)
-          </button>
-          <button id="btn-delete-old-records" class="mini-btn mini-btn-danger">
-            이전 기록 전체 삭제
+          <!-- 관리자 확인을 거쳐 선택 삭제를 수행하는 버튼 -->
+          <button id="btn-delete-selected" class="mini-btn">
+           선택 삭제 (관리자용)
+         </button>
+          <!-- 관리자 확인 후에만 등장하는 전체 삭제 버튼 -->
+          <button
+           id="btn-delete-all-records"
+            class="mini-btn mini-btn-danger"
+            style="display: none;"
+          >
+           모든 기록 전체 삭제
           </button>
         </div>
+
 
         <!-- 오늘의 최다 인증자 -->
         <p id="top-user-info" class="top-user-info">
