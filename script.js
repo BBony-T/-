@@ -151,12 +151,8 @@ function getNowDateTimeString() {
 
 // 🔹 오늘 인증 기록을 Firestore에 저장 (사진은 일단 제외, 텍스트만)->해결
 // 🔹 인증 하나를 Firestore + Storage에 저장
-async function addCertificationToFirebase(
-  nickname,
-  message,
-  missionType,
-  imageDataUrl
-) {
+// 🔹 인증 하나를 Firestore + Storage에 저장
+async function addCertificationToFirebase(nickname, message, missionType, imageDataUrl) {
   // 1) 최소한 익명 로그인 보장
   await ensureAnonymousLogin();
 
@@ -172,26 +168,40 @@ async function addCertificationToFirebase(
   };
 
   const colRef = collection(db, "certifications");
-  const docRef = await addDoc(colRef, baseDoc);
+  const docRef = await addDoc(colRef, baseDoc);  // 🔹 여기까지 하면 지금처럼 텍스트는 저장됨
 
   // 3) 사진이 있는 경우 Storage 업로드 + URL 업데이트
   if (imageDataUrl) {
-    // 날짜/문서ID 기준으로 저장
-    const imagePath = `certifications/${today}/${docRef.id}.jpg`;
-    const imageRef = ref(storage, imagePath);
+    try {
+      // dataURL -> Blob으로 변환
+      const res = await fetch(imageDataUrl);
+      const blob = await res.blob();
 
-    // data URL 그대로 업로드
-    await uploadString(imageRef, imageDataUrl, "data_url");
-    const imageUrl = await getDownloadURL(imageRef);
+      // 경로 예: certifications/2025-12-05/sorVW...Jpu.jpg
+      const imagePath = `certifications/${today}/${docRef.id}.jpg`;
+      const storageRef = ref(storage, imagePath);
 
-    await updateDoc(docRef, {
-      imagePath,
-      imageUrl,
-    });
+      // Blob 업로드
+      await uploadBytes(storageRef, blob);
+
+      // 다운로드 URL 얻기
+      const imageUrl = await getDownloadURL(storageRef);
+
+      // 방금 만든 문서에 imagePath, imageUrl 필드 추가
+      await updateDoc(docRef, {
+        imagePath,
+        imageUrl,
+      });
+    } catch (e) {
+      console.error("이미지 업로드/저장 중 오류:", e);
+      // 이미지 부분만 실패해도 텍스트 인증은 남게 두고 싶으면 alert만 띄우기
+      alert("텍스트 인증은 저장되었지만, 사진 업로드 중 오류가 발생했습니다.");
+    }
   }
 
   return docRef.id;
 }
+
 
 
 
