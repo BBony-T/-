@@ -148,11 +148,12 @@ function getNowDateTimeString() {
    2. Firebase 인증 기록 관리
    ============================== */
 // 🔹 인증 하나를 Firestore + Storage에 저장
-
-// 🔹 오늘 인증 기록을 Firestore에 저장 (사진은 일단 제외, 텍스트만)->해결
-// 🔹 인증 하나를 Firestore + Storage에 저장
-// 🔹 인증 하나를 Firestore + Storage에 저장
-async function addCertificationToFirebase(nickname, message, missionType, imageDataUrl) {
+async function addCertificationToFirebase(
+  nickname,
+  message,
+  missionType,
+  imageDataUrl
+) {
   // 1) 최소한 익명 로그인 보장
   await ensureAnonymousLogin();
 
@@ -168,39 +169,38 @@ async function addCertificationToFirebase(nickname, message, missionType, imageD
   };
 
   const colRef = collection(db, "certifications");
-  const docRef = await addDoc(colRef, baseDoc);  // 🔹 여기까지 하면 지금처럼 텍스트는 저장됨
+  const docRef = await addDoc(colRef, baseDoc);
+  console.log("📝 Firestore 문서 생성:", docRef.id);
 
   // 3) 사진이 있는 경우 Storage 업로드 + URL 업데이트
   if (imageDataUrl) {
     try {
-      // dataURL -> Blob으로 변환
-      const res = await fetch(imageDataUrl);
-      const blob = await res.blob();
+      console.log("📤 이미지 업로드 시작 (uploadString)");
 
-      // 경로 예: certifications/2025-12-05/sorVW...Jpu.jpg
       const imagePath = `certifications/${today}/${docRef.id}.jpg`;
       const storageRef = ref(storage, imagePath);
 
-      // Blob 업로드
-      await uploadBytes(storageRef, blob);
-
-      // 다운로드 URL 얻기
+      // ✅ data URL 그대로 업로드
+      await uploadString(storageRef, imageDataUrl, "data_url");
       const imageUrl = await getDownloadURL(storageRef);
 
-      // 방금 만든 문서에 imagePath, imageUrl 필드 추가
       await updateDoc(docRef, {
         imagePath,
         imageUrl,
       });
+
+      console.log("✅ imagePath/imageUrl Firestore에 저장 완료");
     } catch (e) {
-      console.error("이미지 업로드/저장 중 오류:", e);
-      // 이미지 부분만 실패해도 텍스트 인증은 남게 두고 싶으면 alert만 띄우기
+      console.error("❌ 이미지 업로드/저장 중 오류:", e);
       alert("텍스트 인증은 저장되었지만, 사진 업로드 중 오류가 발생했습니다.");
     }
+  } else {
+    console.log("⚠ imageDataUrl 없음 – 사진 없이 인증 저장");
   }
 
   return docRef.id;
 }
+
 
 
 
@@ -535,7 +535,8 @@ function capturePhoto() {
   ctx.drawImage(video, 0, 0, width, height);
 
   try {
-    lastCapturedImageDataUrl = canvas.toDataURL("image/jpeg", 0.8);
+    lastCapturedImageDataUrl = canvas.toDataURL("image/jpeg", 0.8); // ✅ 여기가 이미지 데이터 url 생성
+    console.log("📸 캡처 완료, dataURL 길이:", lastCapturedImageDataUrl.length); //이거 새로 추가
   } catch (e) {
     console.error("toDataURL error:", e);
     lastCapturedImageDataUrl = null;
@@ -934,11 +935,13 @@ async function init() {
   await loadRandomMessagesFromSheet();
   showView("main");
 
-  // ✅ 여기에서 DOM이 다 준비된 뒤에 form을 찾는다
+  // ✅ HTML의 <form id="ccertifyForm"> 와 맞추기
   const certifyFormEl = document.getElementById("certifyForm");
 
   if (!certifyFormEl) {
-    console.warn('❌ certifyForm 요소를 찾지 못했습니다. index.html에서 <form id="certifyForm"> 인지 확인해 주세요.');
+    console.warn(
+      "❌ certifyForm 요소를 찾지 못했습니다. index.html에서 <form id=\"certifyForm\"> 인지 확인해 주세요."
+    );
     return;
   }
 
@@ -950,6 +953,9 @@ async function init() {
 
     const nickname = nicknameInput.value.trim();
     const message  = messageInput.value.trim();
+    const imageDataUrl = lastCapturedImageDataUrl || null;
+
+    console.log("📸 imageDataUrl 존재 여부:", !!imageDataUrl);
 
     if (!nickname || !message) {
       alert("닉네임과 인증 문구를 모두 입력해 주세요.");
@@ -958,7 +964,12 @@ async function init() {
 
     try {
       console.log("🔥 addCertificationToFirebase 호출 직전");
-      await addCertificationToFirebase(nickname, message);
+      await addCertificationToFirebase(
+        nickname,
+        message,
+        null,          // missionType (지금은 사용 안 해서 null)
+        imageDataUrl   // ✅ 사진 dataURL 넘기기
+      );
       console.log("✅ addCertificationToFirebase 완료");
 
       alert("인증이 저장되었습니다! 🎉");
@@ -977,6 +988,9 @@ async function init() {
     }
   });
 }
+
+document.addEventListener("DOMContentLoaded", init);
+
 
 // DOMContentLoaded 시점에 init 실행
 document.addEventListener("DOMContentLoaded", init);
