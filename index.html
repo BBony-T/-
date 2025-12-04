@@ -22,13 +22,13 @@
         <p id="random-message-text" class="random-message">
           Google 스프레드시트에서 문구를 불러오는 중입니다.
         </p>
-        <!-- 🆕 명언 저자/출처 표시 줄 -->
         <p id="random-message-author" class="random-message-author"></p>
       </section>
-      <!-- 🆕 인증 안내 문구 -->
+
+      <!-- 필사/인증 안내 문구 -->
       <p class="certify-guide-text">
-       건강 미션은 <strong>실천 장면</strong>을,<br />
-       응원·명언은 <strong>종이에 필사한 문구를 촬영</strong>해 인증해 주세요 ✍️📷
+        건강 미션은 실천 장면을,<br />
+        응원·명언은 <strong>종이에 필사한 문구를 촬영</strong>해 인증해 주세요 ✍️📷
       </p>
 
       <section class="button-group">
@@ -51,6 +51,13 @@
               카메라 허용을 눌러주세요 📷
             </div>
           </div>
+
+          <!-- 얼굴 안내 문구 -->
+          <p class="face-notice">
+            📸 인증 사진에는 <strong>얼굴이 나오지 않도록</strong> 찍어 주세요.<br />
+            손, 발, 필사한 노트 등 일부만 보이도록 촬영하면 좋아요.
+          </p>
+
           <div class="camera-button-row">
             <button id="btn-take-photo" class="primary-btn small-btn">
               사진 찍기
@@ -60,8 +67,7 @@
             </button>
           </div>
           <p class="camera-help">
-            * 촬영된 사진은 화면에만 표시되고,<br />
-            현재 버전에서는 브라우저에만 저장됩니다.
+            * 촬영된 사진은 서버에 업로드되어 오늘의 인증자 목록에 함께 표시됩니다.
           </p>
           <p id="camera-error" class="error-text"></p>
         </div>
@@ -89,9 +95,10 @@
               required
             />
           </div>
+
           <p class="warning-text">
-          부적절한 닉네임·인증문구·사진의 경우<br>
-          관리자에 의해 삭제될 수 있습니다.
+            부적절한 닉네임·인증문구·사진의 경우<br />
+            관리자에 의해 삭제될 수 있습니다.
           </p>
 
           <button type="submit" class="primary-btn full-width-btn">
@@ -113,10 +120,12 @@
           오늘(00:00 ~ 23:59) 동안 기록된 인증 내역만 표시됩니다.
         </p>
 
-        <!-- 관리자 삭제 모드 토글 버튼 -->
         <div class="list-actions">
           <button id="btn-toggle-admin" class="mini-btn">
-            선택 삭제 (관리자용)
+            관리자 모드 (삭제)
+          </button>
+          <button id="btn-delete-old-records" class="mini-btn mini-btn-danger">
+            이전 기록 전체 삭제
           </button>
         </div>
 
@@ -125,14 +134,11 @@
           아직 오늘의 최다 인증자가 없습니다.
         </p>
 
-        <!-- 🆕 오늘의 TOP 5 순위 박스가 들어갈 자리 -->
-        <div id="rankings-container" class="rankings-container">
-          <!-- 자바스크립트에서 채워 넣음 -->
-        </div>
+        <!-- TOP5 순위 박스 -->
+        <div id="rankings-container" class="rankings-container"></div>
 
-        <div id="records-container" class="records-container">
-          <!-- 자바스크립트에서 항목을 채움 -->
-        </div>
+        <!-- 오늘의 인증 카드 목록 -->
+        <div id="records-container" class="records-container"></div>
 
         <button id="btn-back-from-list" class="ghost-btn full-width-btn">
           메인으로 돌아가기
@@ -151,6 +157,7 @@
     </footer>
   </div>
 
-  <script src="script.js"></script>
+  <!-- ES Module 스크립트 -->
+  <script type="module" src="script.js"></script>
 </body>
 </html>
