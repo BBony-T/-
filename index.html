@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>오늘의 해냄</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app-container">
+    <!-- 공통 헤더 -->
+    <header class="app-header">
+      <h1 class="app-title">오늘의 해냄</h1>
+      <p class="app-subtitle">오늘도 한 걸음, 해낸 나를 기록하기</p>
+    </header>
+
+    <!-- 메인 화면 -->
+    <main id="view-main" class="view active-view">
+      <section class="card random-message-card">
+        <h2 class="section-title">오늘의 메시지</h2>
+        <p id="random-category-label" class="random-category">불러오는 중...</p>
+        <p id="random-message-text" class="random-message">
+          Google 스프레드시트에서 문구를 불러오는 중입니다.
+        </p>
+        <!-- 🆕 명언 저자/출처 표시 줄 -->
+        <p id="random-message-author" class="random-message-author"></p>
+      </section>
+      <!-- 🆕 인증 안내 문구 -->
+      <p class="certify-guide-text">
+       건강 미션은 <strong>실천 장면</strong>을,<br />
+       응원·명언은 <strong>종이에 필사한 문구를 촬영</strong>해 인증해 주세요 ✍️📷
+      </p>
+
+      <section class="button-group">
+        <button id="btn-go-certify" class="primary-btn">인증하러가기</button>
+        <button id="btn-go-list" class="secondary-btn">오늘의 인증자 목록</button>
+      </section>
+    </main>
+
+    <!-- 인증 화면 -->
+    <main id="view-certify" class="view">
+      <section class="card">
+        <h2 class="section-title">오늘의 해냄 인증</h2>
+
+        <!-- 카메라 영역 -->
+        <div class="camera-wrapper">
+          <div class="camera-box">
+            <video id="camera-preview" autoplay playsinline></video>
+            <canvas id="captured-canvas"></canvas>
+            <div id="camera-overlay-text" class="camera-overlay-text">
+              카메라 허용을 눌러주세요 📷
+            </div>
+          </div>
+          <div class="camera-button-row">
+            <button id="btn-take-photo" class="primary-btn small-btn">
+              사진 찍기
+            </button>
+            <button id="btn-retake-photo" class="secondary-btn small-btn">
+              다시 찍기
+            </button>
+          </div>
+          <p class="camera-help">
+            * 촬영된 사진은 화면에만 표시되고,<br />
+            현재 버전에서는 브라우저에만 저장됩니다.
+          </p>
+          <p id="camera-error" class="error-text"></p>
+        </div>
+
+        <!-- 입력 폼 -->
+        <form id="certify-form" class="form">
+          <div class="form-group">
+            <label for="nickname">닉네임</label>
+            <input
+              type="text"
+              id="nickname"
+              name="nickname"
+              placeholder="예: 뽀니쌤"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="message">인증 문구</label>
+            <input
+              type="text"
+              id="message"
+              name="message"
+              placeholder="예: #성공, 오늘 미션 완료!"
+              required
+            />
+          </div>
+          <p class="warning-text">
+          부적절한 닉네임·인증문구·사진의 경우<br>
+          관리자에 의해 삭제될 수 있습니다.
+          </p>
+
+          <button type="submit" class="primary-btn full-width-btn">
+            오늘 해냄 기록하기
+          </button>
+        </form>
+
+        <button id="btn-back-from-certify" class="ghost-btn full-width-btn">
+          메인으로 돌아가기
+        </button>
+      </section>
+    </main>
+
+    <!-- 인증자 목록 화면 -->
+    <main id="view-list" class="view">
+      <section class="card">
+        <h2 class="section-title">오늘의 인증자 목록</h2>
+        <p class="list-description">
+          오늘(00:00 ~ 23:59) 동안 기록된 인증 내역만 표시됩니다.
+        </p>
+
+        <!-- 관리자 삭제 모드 토글 버튼 -->
+        <div class="list-actions">
+          <button id="btn-toggle-admin" class="mini-btn">
+            선택 삭제 (관리자용)
+          </button>
+        </div>
+
+        <!-- 오늘의 최다 인증자 -->
+        <p id="top-user-info" class="top-user-info">
+          아직 오늘의 최다 인증자가 없습니다.
+        </p>
+
+        <div id="records-container" class="records-container">
+          <!-- 자바스크립트에서 항목을 채움 -->
+        </div>
+
+        <button id="btn-back-from-list" class="ghost-btn full-width-btn">
+          메인으로 돌아가기
+        </button>
+      </section>
+    </main>
+
+    <!-- 🎉 인증 성공 토스트(팝업) -->
+    <div id="success-toast" class="success-toast">
+      🎉 인증 성공!
+    </div>
+
+    <!-- 고정 제작자 정보 -->
+    <footer class="app-footer">
+      <span>만든이: 뽀니쌤</span>
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

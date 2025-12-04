@@ -1,0 +1,510 @@
+/* 전체 기본 설정 */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
+    "Noto Sans KR", system-ui, sans-serif;
+  background: #f5f7ff;
+  color: #222;
+  transition: background-color 0.3s ease;
+}
+
+/* 🔮 랜덤 문구 카테고리에 따른 테마 색상 */
+body.theme-mission {
+  background: #e6f8ec; /* 초록 계열 */
+}
+
+body.theme-cheer {
+  background: #fff1e0; /* 주황 계열 */
+}
+
+body.theme-quote {
+  background: #eef1ff; /* 보라/파랑 계열 */
+}
+
+/* 앱 전체 레이아웃 (모바일 기준) */
+.app-container {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100vh;
+  padding: 12px 12px 60px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 헤더 */
+.app-header {
+  text-align: center;
+  padding: 12px 8px 4px;
+}
+
+.app-title {
+  margin: 0;
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #374785;
+}
+
+.app-subtitle {
+  margin: 4px 0 0;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+/* 화면(view) 공통 */
+.view {
+  display: none;
+  margin-top: 8px;
+}
+
+.active-view {
+  display: block;
+}
+
+/* 카드 UI */
+.card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 16px 14px 18px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+}
+
+/* 섹션 제목 */
+.section-title {
+  margin: 0 0 12px;
+  font-size: 1.3rem;
+  color: #374785;
+}
+
+/* 랜덤 메시지 카드 */
+.random-message-card {
+  margin-bottom: 16px;
+  text-align: center; /* 🧡 카드 안 전체 가운데 정렬 */
+}
+
+.random-category {
+  font-size: 0.9rem;
+  color: #888;
+  margin-bottom: 6px;
+}
+
+.random-message {
+  margin: 0;
+  font-size: 1.1rem;
+  line-height: 1.5;
+  font-weight: 600;
+}
+
+.random-message-author {
+  margin: 6px 0 0;
+  font-size: 0.85rem;
+  color: #666;
+  font-style: italic;
+}
+
+.certify-guide-text {
+  text-align: center;
+  font-size: 0.9rem;
+  color: #555;
+  margin: 8px 0 14px;
+  line-height: 1.5;
+}
+
+
+/* 버튼 스타일 */
+.button-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+button {
+  border: none;
+  cursor: pointer;
+  border-radius: 999px;
+  font-size: 1rem;
+  padding: 10px 16px;
+  transition: transform 0.08s ease, box-shadow 0.08s ease,
+    background-color 0.1s ease;
+}
+
+button:active {
+  transform: translateY(1px);
+  box-shadow: none;
+}
+
+.primary-btn {
+  background: linear-gradient(135deg, #5c7cfa, #9b7df5);
+  color: #fff;
+  font-weight: 700;
+  box-shadow: 0 4px 10px rgba(92, 124, 250, 0.4);
+}
+
+.secondary-btn {
+  background: #ffffff;
+  color: #374785;
+  font-weight: 600;
+  border: 1px solid #d0d7ff;
+}
+
+.ghost-btn {
+  background: transparent;
+  color: #374785;
+  border: 1px dashed #a9b6ff;
+}
+
+/* 버튼 크기 */
+.full-width-btn {
+  width: 100%;
+  margin-top: 10px;
+}
+
+.small-btn {
+  flex: 1;
+  font-size: 0.9rem;
+}
+
+/* 카메라 영역 */
+.camera-wrapper {
+  margin-bottom: 14px;
+}
+
+.camera-box {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #e3e7ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#camera-preview,
+#captured-canvas {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+#captured-canvas {
+  display: none;
+}
+
+.camera-overlay-text {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #fff;
+  background: rgba(55, 71, 133, 0.7);
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+}
+
+.camera-button-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.camera-help {
+  margin: 6px 0 0;
+  font-size: 0.8rem;
+  color: #777;
+}
+
+/* 폼 스타일 */
+.form {
+  margin-top: 8px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.form-group label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #555;
+}
+
+.form-group input {
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid #d4daf7;
+  font-size: 0.95rem;
+}
+
+/* 에러 텍스트 */
+.error-text {
+  margin: 4px 0 0;
+  font-size: 0.8rem;
+  color: #d9534f;
+}
+
+/* 인증자 목록 */
+.list-description {
+  margin-top: 0;
+  margin-bottom: 4px;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+/* 관리자 액션 영역 */
+.list-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 6px;
+}
+
+.mini-btn {
+  font-size: 0.8rem;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid #d0d7ff;
+  background: #fff;
+  color: #374785;
+}
+
+/* 🔥 오늘의 최다 인증자 표시 */
+.top-user-info {
+  margin: 4px 0 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #374785;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #eef1ff;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.top-user-info .crown-icon {
+  font-size: 1rem;
+}
+
+.records-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+/* 개별 기록 카드 */
+.record-item {
+  border-radius: 12px;
+  padding: 10px 10px 8px;
+  background: #f3f5ff;
+  border: 1px solid #d9e0ff;
+}
+
+/* 사진 썸네일 */
+.record-photo {
+  margin-top: 6px;
+  width: 80%;
+  max-height: 140px;
+  object-fit: cover;
+  border-radius: 10px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;  /* 가운데 정렬 */
+}
+
+/* 기록 카드 헤더 */
+.record-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+/* 닉네임 + 뱃지 묶음 */
+.record-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.record-nickname {
+  font-weight: 700;
+  color: #374785;
+  font-size: 0.95rem;
+}
+
+/* 🔰 인증 횟수 뱃지 */
+.record-badge {
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #fff;
+  color: #374785;
+  border: 1px solid #b6c2ff;
+}
+
+.record-timestamp {
+  font-size: 0.75rem;
+  color: #777;
+}
+
+.record-message {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+/* 관리자 모드 삭제 버튼 */
+.record-delete-btn {
+  margin-left: 8px;
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #ffeded;
+  color: #c0392b;
+  border: 1px solid #ffb3b3;
+}
+
+/* 데이터 없음 안내 */
+.no-records {
+  text-align: center;
+  font-size: 0.9rem;
+  color: #999;
+  padding: 12px 0;
+}
+
+/* 푸터 (제작자 정보 고정) */
+.app-footer {
+  position: fixed;
+  bottom: 8px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 0.8rem;
+  color: #777;
+  pointer-events: none;
+}
+
+/* 🎉 인증 성공 토스트 */
+.success-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 80px;
+  transform: translateX(-50%) translateY(120%);
+  background: rgba(55, 71, 133, 0.98);
+  color: #fff;
+  padding: 10px 18px;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 999;
+}
+
+/* show 클래스가 붙으면 애니메이션 실행 */
+.success-toast.show {
+  animation: toast-pop 1.4s ease-in-out forwards;
+}
+
+/* 토스트 애니메이션 */
+@keyframes toast-pop {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(120%);
+  }
+  15% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0%);
+  }
+  80% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0%);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(120%);
+  }
+}
+
+/* 조금 넓은 화면(태블릿 등)에서 살짝 중앙정렬 유지 */
+@media (min-width: 600px) {
+  .app-container {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    border-radius: 18px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  }
+}
+/* ============================
+   인증 화면 중앙 정렬 스타일
+============================ */
+#view-certify {
+  text-align: center;
+}
+
+#camera-preview,
+#captured-canvas {
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
+}
+
+/* 경고 문구 스타일 */
+.warning-text {
+  margin-top: 8px;
+  font-size: 0.8rem;
+  color: #888;
+  text-align: center;
+  line-height: 1.4;
+}
+
+/* ============================
+   인증자 목록 중앙 정렬
+============================ */
+#view-list {
+  text-align: center;
+}
+
+.record-item {
+  text-align: center;
+}
+
+.record-left {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+
+.record-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* 타임스탬프도 중앙 */
+.record-timestamp {
+  display: block;
+  margin: 4px auto;
+}
+
+/* 사진 중앙 정렬 */
+.record-photo {
+  margin-left: auto;
+  margin-right: auto;
+}
