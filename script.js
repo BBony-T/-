@@ -91,7 +91,7 @@ const randomCategoryLabel = document.getElementById("random-category-label");
 const randomMessageText = document.getElementById("random-message-text");
 const randomMessageAuthor = document.getElementById("random-message-author");
 
-const certifyForm = document.getElementById("certifyForm");
+
 const nicknameInput = document.getElementById("nickname");
 const messageInput = document.getElementById("certifyMessage");
 
@@ -150,23 +150,25 @@ function getNowDateTimeString() {
 // 🔹 인증 하나를 Firestore + Storage에 저장
 
 // 🔹 Firestore에 텍스트 기록만 저장 (사진은 일단 보류 버전)
+// 🔹 오늘 인증 기록을 Firestore에 저장 (사진은 일단 제외, 텍스트만)
 async function addCertificationToFirebase(nickname, message) {
-  // 익명 로그인 보장
+  // 0) 익명 로그인 보장
   await ensureAnonymousLogin();
 
   const today = getTodayString();
 
-  const docData = {
+  // certifications 컬렉션에 문서 하나 추가
+  const colRef = collection(db, "certifications");
+  const docRef = await addDoc(colRef, {
     nickname,
     message,
     date: today,
-    timestamp: serverTimestamp(), // 서버 시간
-    imageUrl: "",
-    imagePath: "",
-  };
+    timestamp: serverTimestamp(),  // 서버 기준 시간
+  });
 
-  await addDoc(collection(db, "certifications"), docData);
+  console.log("📌 Firestore 문서 생성됨:", docRef.id);
 }
+
 
 
     // 3) 사진이 있는 경우 Storage 업로드 + URL 업데이트
@@ -912,75 +914,65 @@ if (btnDeleteAllRecords) {
    7. 이벤트 바인딩 & 초기화
    ============================== */
 
-document.addEventListener("DOMContentLoaded", () => {
-  // 1) 화면 전환 버튼들
-  if (btnGoCertify) {
-    btnGoCertify.addEventListener("click", () => showView("certify"));
+// 화면 전환 버튼들
+btnGoCertify.addEventListener("click", () => showView("certify"));
+btnGoList.addEventListener("click", () => showView("list"));
+btnBackFromCertify.addEventListener("click", () => showView("main"));
+btnBackFromList.addEventListener("click", () => showView("main"));
+
+// 카메라 버튼
+btnTakePhoto.addEventListener("click", capturePhoto);
+btnRetakePhoto.addEventListener("click", retakePhoto);
+
+// 초기화 함수 (랜덤문구 + 익명로그인 + 첫 화면)
+async function init() {
+  await ensureAnonymousLogin();
+  await loadRandomMessagesFromSheet();
+  showView("main");
+
+  // ✅ 여기에서 DOM이 다 준비된 뒤에 form을 찾는다
+  const certifyFormEl = document.getElementById("certifyForm");
+
+  if (!certifyFormEl) {
+    console.warn('❌ certifyForm 요소를 찾지 못했습니다. index.html에서 <form id="certifyForm"> 인지 확인해 주세요.');
+    return;
   }
-  if (btnGoList) {
-    btnGoList.addEventListener("click", () => showView("list"));
-  }
-  if (btnBackFromCertify) {
-    btnBackFromCertify.addEventListener("click", () => showView("main"));
-  }
-  if (btnBackFromList) {
-    btnBackFromList.addEventListener("click", () => showView("main"));
-  }
 
-  // 2) 카메라 버튼들
-  if (btnTakePhoto) {
-    btnTakePhoto.addEventListener("click", capturePhoto);
-  }
-  if (btnRetakePhoto) {
-    btnRetakePhoto.addEventListener("click", retakePhoto);
-  }
+  console.log("✅ certifyForm found, submit handler attached.");
 
-  // 3) 인증 폼 제출
-  if (certifyForm) {
-     console.log("✅ certifyForm found, submit handler attached.");
-     certifyForm.addEventListener("submit", async (event) => {
-       event.preventDefault();
-      console.log("📩 submit fired");
+  certifyFormEl.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    console.log("📩 submit fired");
 
-      const nickname = nicknameInput.value.trim();
-      const message  = messageInput.value.trim();
+    const nickname = nicknameInput.value.trim();
+    const message  = messageInput.value.trim();
 
-      // ⛔ 닉네임/문구 둘 다 필수
-        if (!nickname || !message) {
-       alert("닉네임과 인증 문구를 모두 입력해 주세요.");
-       return;
-     }
+    if (!nickname || !message) {
+      alert("닉네임과 인증 문구를 모두 입력해 주세요.");
+      return;
+    }
 
-     try {
-       console.log("🔥 addCertificationToFirebase 호출 직전");
-       // ✅ 이제는 텍스트만 넘긴다
-       await addCertificationToFirebase(nickname, message);
-       console.log("✅ addCertificationToFirebase 완료");
+    try {
+      console.log("🔥 addCertificationToFirebase 호출 직전");
+      await addCertificationToFirebase(nickname, message);
+      console.log("✅ addCertificationToFirebase 완료");
 
-       alert("인증이 저장되었습니다! 🎉");
+      alert("인증이 저장되었습니다! 🎉");
 
-       // 입력값 초기화
-       nicknameInput.value = "";
-       messageInput.value = "";
-        lastCapturedImageDataUrl = null; // 사진 변수는 그냥 리셋만
+      // 입력값 초기화
+      nicknameInput.value = "";
+      messageInput.value = "";
+      lastCapturedImageDataUrl = null;
 
-        // 인증자 목록 화면으로 이동 + 새로 렌더
-        showView("list");
-         await renderRecords();
-      } catch (e) {
+      // 인증자 목록 화면으로 이동 + 새로 렌더
+      showView("list");
+      await renderRecords();
+    } catch (e) {
       console.error("❌ 인증 저장 중 오류:", e);
-       alert("인증 저장 중 오류가 발생했습니다. 다시 시도해 주세요.");
-     }
-    
-    });
-  } else {
-    console.warn("⚠ certifyForm 요소를 찾지 못했습니다. id 값을 확인해주세요.");
-  }
+      alert("인증 저장 중 오류가 발생했습니다. 다시 시도해 주세요.");
+    }
+  });
+}
 
-  // 4) 초기 화면 세팅
-  (async () => {
-    await ensureAnonymousLogin();
-    await loadRandomMessagesFromSheet();
-    showView("main");
-  })();
-});
+// DOMContentLoaded 시점에 init 실행
+document.addEventListener("DOMContentLoaded", init);
