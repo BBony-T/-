@@ -18,7 +18,6 @@ import {
   getFirestore,
   collection,
   addDoc,
-  deleteDoc,
   getDocs,
   query,
   where,
