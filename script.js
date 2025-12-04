@@ -148,43 +148,44 @@ function getNowDateTimeString() {
    2. Firebase 인증 기록 관리
    ============================== */
 // 🔹 인증 하나를 Firestore + Storage에 저장
-async function addCertificationToFirebase(nickname, message, missionType, imageDataUrl) {
-  // 1) 최소한 익명 로그인 보장
+
+// 🔹 Firestore에 텍스트 기록만 저장 (사진은 일단 보류 버전)
+async function addCertificationToFirebase(nickname, message) {
+  // 익명 로그인 보장
   await ensureAnonymousLogin();
 
   const today = getTodayString();
 
-  // 2) Firestore에 기본 정보 먼저 저장
-  const baseDoc = {
+  const docData = {
     nickname,
     message,
-    missionType: missionType || null,
     date: today,
-    timestamp: serverTimestamp(), // 서버 기준 시간
+    timestamp: serverTimestamp(), // 서버 시간
+    imageUrl: "",
+    imagePath: "",
   };
 
-  const colRef = collection(db, "certifications");
-  const docRef = await addDoc(colRef, baseDoc);
-
-  // 3) 사진이 있는 경우 Storage 업로드 + URL 업데이트
-  /*
-  if (imageDataUrl) {
-    const imagePath = `certifications/${today}/${docRef.id}.jpg`;
-    const storageRef = ref(storage, imagePath);
-
-    // data URL 그대로 업로드
-    await uploadString(storageRef, imageDataUrl, "data_url");
-    const imageUrl = await getDownloadURL(storageRef);
-
-    await updateDoc(docRef, {
-      imagePath,
-      imageUrl,
-    });
-  }
-  */
-
-  return docRef.id;
+  await addDoc(collection(db, "certifications"), docData);
 }
+
+
+    // 3) 사진이 있는 경우 Storage 업로드 + URL 업데이트
+    /*
+    if (imageDataUrl) {
+        const imagePath = `certifications/${today}/${docRef.id}.jpg`;
+        const storageRef = ref(storage, imagePath);
+
+        // data URL 그대로 업로드
+        await uploadString(storageRef, imageDataUrl, "data_url");
+        const imageUrl = await getDownloadURL(storageRef);
+
+        await updateDoc(docRef, {
+        imagePath,
+         imageUrl,
+     });
+     }
+     */// 밑에 return docRef.id 있음. 그다음 함수 끝
+
 //위쪽까지가 새로 추가한 것 B-1의 핵심
 // Firestore에서 오늘 기록 가져오기//기존 것 삭제fetchTodayRecords 함수
 // 🔹 오늘 날짜의 인증 기록들만 Firestore에서 가져오기(새로 추가 B-2)
@@ -936,44 +937,41 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // 3) 인증 폼 제출
   if (certifyForm) {
-    console.log("✅ certifyForm found, submit handler attached.");
-    certifyForm.addEventListener("submit", async (event) => {
-      event.preventDefault();
+     console.log("✅ certifyForm found, submit handler attached.");
+     certifyForm.addEventListener("submit", async (event) => {
+       event.preventDefault();
       console.log("📩 submit fired");
 
       const nickname = nicknameInput.value.trim();
       const message  = messageInput.value.trim();
-      const imageDataUrl = lastCapturedImageDataUrl || null;
 
-      if (!nickname || !message) {
-        alert("닉네임과 인증 문구를 모두 입력해 주세요.");
-        return;
-      }
+      // ⛔ 닉네임/문구 둘 다 필수
+        if (!nickname || !message) {
+       alert("닉네임과 인증 문구를 모두 입력해 주세요.");
+       return;
+     }
 
-      try {
-        console.log("🔥 addCertificationToFirebase 호출 직전");
-        await addCertificationToFirebase(
-          nickname,
-          message,
-          null,          // missionType은 당장 쓰지 않으니 null
-          imageDataUrl
-        );
-        console.log("✅ addCertificationToFirebase 완료");
+     try {
+       console.log("🔥 addCertificationToFirebase 호출 직전");
+       // ✅ 이제는 텍스트만 넘긴다
+       await addCertificationToFirebase(nickname, message);
+       console.log("✅ addCertificationToFirebase 완료");
 
-        alert("인증이 저장되었습니다! 🎉");
+       alert("인증이 저장되었습니다! 🎉");
 
-        // 입력값 초기화
-        nicknameInput.value = "";
-        messageInput.value = "";
-        lastCapturedImageDataUrl = null;
+       // 입력값 초기화
+       nicknameInput.value = "";
+       messageInput.value = "";
+        lastCapturedImageDataUrl = null; // 사진 변수는 그냥 리셋만
 
         // 인증자 목록 화면으로 이동 + 새로 렌더
         showView("list");
-        await renderRecords();
+         await renderRecords();
       } catch (e) {
-        console.error("❌ 인증 저장 중 오류:", e);
-        alert("인증 저장 중 오류가 발생했습니다. 다시 시도해 주세요.");
-      }
+      console.error("❌ 인증 저장 중 오류:", e);
+       alert("인증 저장 중 오류가 발생했습니다. 다시 시도해 주세요.");
+     }
+    
     });
   } else {
     console.warn("⚠ certifyForm 요소를 찾지 못했습니다. id 값을 확인해주세요.");
