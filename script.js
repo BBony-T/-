@@ -69,8 +69,7 @@ onAuthStateChanged(auth, (user) => {
   }
 });
 
-/* 관리자 모드 여부 (UI용) */
-let isAdminMode = false;
+/* 관리자 모드 여부 (UI용) 삭제 let isAdminMode 어쩌구 저쩌구*
 
 /* ==============================
    1. DOM 요소 & 공통 함수
