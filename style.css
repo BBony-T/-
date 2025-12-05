@@ -183,24 +183,23 @@ button:active {
 .camera-box {
   position: relative;
   width: 100%;
-  aspect-ratio: 3 / 4;
+  max-width: 400px;
+  margin: 0 auto;
+  /* ✅ 여기서 프레임 비율을 결정 (원하면 4 / 3, 3 / 4 등으로 바꿀 수 있음) */
+  aspect-ratio: 4 / 3;
   border-radius: 16px;
   overflow: hidden;
-  background: #e3e7ff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background: #000;
 }
+
 
 #camera-preview,
 #captured-canvas {
+  position: absolute;
+  inset: 0;           /* top:0; right:0; bottom:0; left:0; 와 동일 */
   width: 100%;
   height: 100%;
-  object-fit: cover;
-}
-
-#captured-canvas {
-  display: none;
+  object-fit: cover;  /* ✅ 박스를 꽉 채우면서 중앙 기준으로 잘림 */
 }
 
 .camera-overlay-text {

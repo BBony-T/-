@@ -520,23 +520,64 @@ function capturePhoto() {
     return;
   }
 
-  const width = video.videoWidth;
-  const height = video.videoHeight;
+  const videoWidth = video.videoWidth;
+  const videoHeight = video.videoHeight;
 
-  if (!width || !height) {
+  if (!videoWidth || !videoHeight) {
     cameraErrorText.textContent =
       "영상이 아직 준비되지 않았습니다. 잠시 후 다시 시도해 주세요.";
     return;
   }
 
-  canvas.width = width;
-  canvas.height = height;
+  // ✅ targetRatio: 화면에 보이는 카메라 박스 비율
+  //   - 우선 video 요소의 실제 표시 크기를 써보고,
+  //   - 그게 0이면(아직 계산 안 됐으면) 원본 비율 사용
+  let targetRatio;
+  if (video.clientWidth > 0 && video.clientHeight > 0) {
+    targetRatio = video.clientWidth / video.clientHeight;
+  } else {
+    targetRatio = videoWidth / videoHeight;
+  }
+
+  const videoRatio = videoWidth / videoHeight;
+
+  let srcW, srcH, sx, sy;
+
+  if (videoRatio > targetRatio) {
+    // 영상이 더 "넓은" 경우 → 좌우를 잘라낸다
+    srcH = videoHeight;
+    srcW = srcH * targetRatio;
+    sx = (videoWidth - srcW) / 2;
+    sy = 0;
+  } else {
+    // 영상이 더 "세로로 긴" 경우 → 위아래를 잘라낸다
+    srcW = videoWidth;
+    srcH = srcW / targetRatio;
+    sx = 0;
+    sy = (videoHeight - srcH) / 2;
+  }
+
+  // 🔹 캔버스 크기를 잘라낼 비율에 맞춰서 설정
+  canvas.width = srcW;
+  canvas.height = srcH;
+
   const ctx = canvas.getContext("2d");
-  ctx.drawImage(video, 0, 0, width, height);
+  // 원본 영상의 가운데 영역만 캔버스에 그리기
+  ctx.drawImage(
+    video,
+    sx,
+    sy,
+    srcW,
+    srcH,
+    0,
+    0,
+    canvas.width,
+    canvas.height
+  );
 
   try {
-    lastCapturedImageDataUrl = canvas.toDataURL("image/jpeg", 0.8); // ✅ 여기가 이미지 데이터 url 생성
-    console.log("📸 캡처 완료, dataURL 길이:", lastCapturedImageDataUrl.length); //이거 새로 추가
+    lastCapturedImageDataUrl = canvas.toDataURL("image/jpeg", 0.8);
+    console.log("📸 캡처 완료, dataURL 길이:", lastCapturedImageDataUrl.length);
   } catch (e) {
     console.error("toDataURL error:", e);
     lastCapturedImageDataUrl = null;
@@ -546,6 +587,7 @@ function capturePhoto() {
   canvas.style.display = "block";
   cameraOverlayText.textContent = "사진이 저장되었습니다. 다시 찍을 수도 있어요.";
 }
+
 
 function retakePhoto() {
   if (!currentStream) {
