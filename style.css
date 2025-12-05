@@ -226,6 +226,15 @@ button:active {
   color: #777;
 }
 
+.camera-tip {
+  margin-top: 8px;
+  font-size: 13px;
+  color: #6a6a6a;
+  text-align: center;
+  line-height: 1.4;
+}
+
+
 /* 얼굴 안내 박스 */
 .face-notice {
   margin: 8px 0 0;
