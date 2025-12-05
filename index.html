@@ -14,20 +14,33 @@
       <p class="app-subtitle">오늘도 한 걸음, 해낸 나를 기록하기</p>
     </header>
 
+    <!-- 🔽 소개 문구 추가 -->
+    <p class="intro-message">
+     💕 오늘의 해냄 사용 방법💕
+      NFC 접촉 → 미션 확인 → 실천 인증📷<br />
+      매일의 <strong>작은 성공</strong>을 모아 <br />
+      스스로, 그리고 함께 <strong>성장</strong>하는 경험을 만들어보세요 ✨
+    </p>
+
     <!-- 메인 화면 -->
     <main id="view-main" class="view active-view">
       <section class="card random-message-card">
         <h2 class="section-title">오늘의 메시지</h2>
+        <!-- 🔽 새로 추가되는 설명 -->
+        <p class="random-message-desc">
+          이 칸에는 <strong>건강 미션</strong>, <strong>응원 문구</strong>, <strong>명언</strong> 중<br />
+          하나가 매번 랜덤으로 표시됩니다 ✨
+        </p>
         <p id="random-category-label" class="random-category">불러오는 중...</p>
         <p id="random-message-text" class="random-message">
-          Google 스프레드시트에서 문구를 불러오는 중입니다.
+          문구를 불러오는 중입니다. 잠시만 기다려주세요.
         </p>
         <p id="random-message-author" class="random-message-author"></p>
       </section>
 
       <!-- 필사/인증 안내 문구 -->
       <p class="certify-guide-text">
-        건강 미션은 실천 장면을,<br />
+        건강 미션은 <strong>실천 장면</strong>을,<br />
         응원·명언은 <strong>종이에 필사한 문구를 촬영</strong>해 인증해 주세요 ✍️📷
       </p>
 
@@ -67,7 +80,7 @@
             </button>
           </div>
           <p class="camera-help">
-            * 촬영된 사진은 서버에 업로드되어 오늘의 인증자 목록에 함께 표시됩니다.
+            ✅촬영된 사진은 오늘의 인증자 목록에 함께 표시됩니다. 
           </p>
           <p class="camera-tip">
             ✍️ <strong>두꺼운 펜(예: 0.7mm 이상)</strong>으로 작성하면 잘보여요.<br />
@@ -101,8 +114,8 @@
           </div>
 
           <p class="warning-text">
-            부적절한 닉네임·인증문구·사진의 경우<br />
-            관리자에 의해 삭제될 수 있습니다.
+            ⚠️부적절한 닉네임·인증문구·사진의 경우<br />
+            관리자에 의해  <strong>삭제</strong>될 수 있습니다.⚠️
           </p>
 
           <button type="submit" class="primary-btn full-width-btn">
