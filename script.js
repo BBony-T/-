@@ -488,7 +488,12 @@ async function startCamera() {
     if (currentStream) return;
 
     const stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: "environment" },
+      video: {
+        facingMode: { ideal: "environment" },  // 후면 카메라 우선
+        // ✅ 해상도 요청(HD 이상) → 글자가 훨씬 또렷해짐
+        width:  { ideal: 1920 },
+        height: { ideal: 1080 },
+      },
       audio: false,
     });
 
@@ -497,6 +502,19 @@ async function startCamera() {
     video.style.display = "block";
     canvas.style.display = "none";
     cameraOverlayText.textContent = "화면을 확인한 뒤, 사진 찍기를 눌러주세요.";
+
+    // ✅ 일부 브라우저에서만 동작: 자동 초점(continuous focus) 시도
+    const [track] = stream.getVideoTracks();
+    if (track && track.applyConstraints) {
+      try {
+        await track.applyConstraints({
+          advanced: [{ focusMode: "continuous" }],
+        });
+        console.log("focusMode=continuous 적용 시도");
+      } catch (e) {
+        console.log("focusMode 설정 미지원 또는 실패:", e);
+      }
+    }
   } catch (error) {
     console.error("Camera error:", error);
     cameraErrorText.textContent =
@@ -504,6 +522,7 @@ async function startCamera() {
     cameraOverlayText.textContent = "카메라 사용 불가";
   }
 }
+
 
 function stopCamera() {
   if (currentStream) {
