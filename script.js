@@ -1055,3 +1055,4 @@ document.addEventListener("DOMContentLoaded", init);
 
 // DOMContentLoaded 시점에 init 실행
 document.addEventListener("DOMContentLoaded", init);
+
