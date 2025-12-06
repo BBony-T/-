@@ -112,7 +112,8 @@ body.theme-quote {
 
 .random-category {
   font-size: 1.0rem;
-  color: #888;
+  font-weight: 500;
+  color: #524545;
   margin-bottom: 8px;
 }
 
@@ -562,6 +563,7 @@ button:active {
 body.admin-selection-mode .record-select {
   display: inline-block;
 }
+
 
 
 
