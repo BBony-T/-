@@ -619,11 +619,12 @@ body.admin-selection-mode .record-select {
 }
 
 /* 모바일에서 세로로 정렬 */
-@media (max-width: 600px) {
+/* @media (max-width: 600px) {
   .top-summary-row {
     flex-direction: column;
   }
-}
+} */
+
 
 
 
