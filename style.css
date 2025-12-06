@@ -571,6 +571,43 @@ body.admin-selection-mode .record-select {
   display: inline-block;
 }
 
+/* 최다 인증자 + 순위 박스 가로 정렬 */
+.top-summary-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+  margin-bottom: 16px;
+  align-items: stretch;
+  flex-wrap: wrap;  /* 화면 좁으면 아래로 내려가도록 */
+}
+
+/* 왼쪽 박스 / 오른쪽 박스 비율 */
+.top-user-box,
+.top-summary-row .rankings-container {
+  flex: 1 1 0;
+}
+
+/* 제목 "오늘의 최다 인증자" */
+.top-user-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #555;
+  margin-bottom: 4px;
+}
+
+/* 기존 rankings-container에 margin-top이 있다면 이 줄로 없애기 */
+.top-summary-row .rankings-container {
+  margin-top: 0;
+}
+
+/* 모바일에서 세로로 정렬 */
+@media (max-width: 600px) {
+  .top-summary-row {
+    flex-direction: column;
+  }
+}
+
+
 
 
 
