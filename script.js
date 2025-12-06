@@ -1055,6 +1055,11 @@ async function init() {
     } catch (e) {
       console.error("❌ 인증 저장 중 오류:", e);
       alert("인증 저장 중 오류가 발생했습니다. 다시 시도해 주세요.");
+    } finally {
+    // ✅ 성공이든 실패든 버튼은 반드시 원상복구
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "오늘 해냄 기록하기";
     }
   });
 }
@@ -1062,6 +1067,7 @@ async function init() {
 
 // DOMContentLoaded 시점에 init 실행
 document.addEventListener("DOMContentLoaded", init);
+
 
 
 
