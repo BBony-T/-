@@ -356,55 +356,38 @@ button:active {
   color: #c0392b;
 }
 
-/* 왼쪽 박스 전체 (제목 + 배지) */
-.top-user-box {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 12px 16px;
-  border-radius: 18px;
-  background: #f6f8ff;         /* 연한 보라 카드 배경 */
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+/* 최다 인증자 + TOP5(인증 순위) 가로 정렬 컨테이너 */
+.top-summary-row {
+  display: flex;
+  flex-direction: row;       /* 모바일에서도 가로 유지 */
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+/* 양쪽 박스가 반반씩 차지 */
+.top-user-box,
+.rankings-container {
+  flex: 1;
+}
+
+/* 가운데 정렬을 유지하면서도 width 자연 확장 */
+.rankings-container {
   text-align: center;
 }
 
-
-/* 제목: '오늘의 최다 인증자' */
+/* 제목은 블록 카드 상단에 명확하게 보이도록 */
 .top-user-title {
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: #3f4a8a;      /* 조금 더 진한 색 */
+  text-align: center;
   margin-bottom: 8px;
-  white-space: nowrap; /* 가능하면 한 줄 유지 */
+  font-weight: 700;
 }
 
-
-/* 배지 형태로 닉네임 + 횟수 표시 */
-.top-user-info {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 10px 18px;
-  border-radius: 999px;
-  background: #eef1ff;          /* 연보라 배경 */
-  color: #3f4a8a;               /* 진한 남보라 글씨 */
-  font-weight: 600;
-  font-size: 0.95rem;
-}
-
-/* 닉네임 / 횟수 글자 크기 살짝 조절 */
-.top-user-nickname {
-  font-size: 1rem;
-}
-
-.top-user-count {
-  font-size: 0.9rem;
-}
-
-.top-user-info .crown-icon {
-  font-size: 1rem;
+/* 모바일 대응 — 너무 좁아지면 줄바꿈 제한 해제 */
+.top-user-info,
+.ranking-box {
+  min-width: 0;
 }
 
 /* TOP5 순위 박스 */
@@ -430,6 +413,8 @@ button:active {
 }
 
 .ranking-list {
+  word-break: keep-all;
+  white-space: normal;
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -639,6 +624,7 @@ body.admin-selection-mode .record-select {
     flex-direction: column;
   }
 }
+
 
 
 
