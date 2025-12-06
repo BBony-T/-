@@ -733,7 +733,10 @@ async function loadRandomMessagesFromSheet() {
     randomMessages.cheers = [];
     randomMessages.quotes = [];
 
-    const headerCells = rows[0].map((c) => (c || "").trim());
+    // CSV 첫 셀에 붙을 수 있는 BOM(﻿) 제거 + 양쪽 공백 제거
+    const headerCells = rows[0].map((c) =>
+      (c || "").replace(/^\uFEFF/, "").trim()
+    );
 
     let missionCol = -1;
     let cheerCol = -1;
@@ -1054,5 +1057,6 @@ document.addEventListener("DOMContentLoaded", init);
 
 // DOMContentLoaded 시점에 init 실행
 document.addEventListener("DOMContentLoaded", init);
+
 
 
