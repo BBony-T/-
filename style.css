@@ -119,7 +119,7 @@ body.theme-quote {
 .random-message {
   margin: 0;
   font-size: 1.2rem;
-  color: #CD5C5C
+  color: #CD5C5C;
   line-height: 1.5;
   font-weight: 600;
 }
@@ -127,7 +127,7 @@ body.theme-quote {
 .random-message-author {
   margin: 6px 0 0;
   font-size: 0.85rem;
-  color: #666;
+  color: #8c6262;
   font-style: italic;
 }
 
@@ -136,7 +136,9 @@ body.theme-quote {
   text-align: center;
   font-size: 0.9rem;
   color: #555;
-  margin: 14px 0 8px;
+  margin-top: 20px;
+  margin-bottom: 8px;
+  border-top: 1.5px dashed #cfcfcf;
   line-height: 1.5;
 }
 
@@ -560,5 +562,6 @@ button:active {
 body.admin-selection-mode .record-select {
   display: inline-block;
 }
+
 
 
