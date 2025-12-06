@@ -96,7 +96,7 @@ body.theme-quote {
 
 /* 랜덤 메시지 카드 */
 .random-message-card {
-  margin-bottom: 16px;
+  margin-bottom: 10px;
   text-align: center;
 }
 
@@ -138,7 +138,8 @@ body.theme-quote {
   font-size: 0.9rem;
   color: #555;
   margin-top: 20px;
-  margin-bottom: 8px;
+  margin-bottom: 0px;
+  pading-top: 12px; 
   border-top: 1.5px dashed #cfcfcf;
   line-height: 1.5;
 }
@@ -563,6 +564,7 @@ button:active {
 body.admin-selection-mode .record-select {
   display: inline-block;
 }
+
 
 
 
