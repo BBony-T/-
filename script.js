@@ -649,7 +649,7 @@ function useCustomMessagesOnly() {
   }));
 }
 
-const SHEETS_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSh1gCwxn3vy9Nv0OqjUlrKr68Ix6efjPRqvFq4a64KrOhmJrtomxpNun4TTLzdD3Fz_S-ikFqfotDx/pubhtml"; // 여기에 Google Sheets CSV 공개 URL 넣기
+const SHEETS_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSh1gCwxn3vy9Nv0OqjUlrKr68Ix6efjPRqvFq4a64KrOhmJrtomxpNun4TTLzdD3Fz_S-ikFqfotDx/pub?output=csv"; // 여기에 Google Sheets CSV 공개 URL 넣기
 
 // CSV 파서
 function parseCsv(text) {
@@ -1057,6 +1057,7 @@ document.addEventListener("DOMContentLoaded", init);
 
 // DOMContentLoaded 시점에 init 실행
 document.addEventListener("DOMContentLoaded", init);
+
 
 
 
