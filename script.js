@@ -1056,17 +1056,19 @@ async function init() {
       console.error("❌ 인증 저장 중 오류:", e);
       alert("인증 저장 중 오류가 발생했습니다. 다시 시도해 주세요.");
     } finally {
-    // ✅ 성공이든 실패든 버튼은 반드시 원상복구
-    if (submitBtn) {
-      submitBtn.disabled = false;
-      submitBtn.textContent = "오늘 해냄 기록하기";
+      // ✅ 성공이든 실패든 버튼은 반드시 원상복구
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "오늘 해냄 기록하기";
+      }
     }
-  });
-}
+  }); // ← addEventListener 끝
+}      // ← init() 함수 끝
 
 
 // DOMContentLoaded 시점에 init 실행
 document.addEventListener("DOMContentLoaded", init);
+
 
 
 
