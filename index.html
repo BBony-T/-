@@ -145,14 +145,18 @@
           </button>
         </div>
 
+        <div class="top-summary-row">
+          <!-- 왼쪽: 오늘의 최다 인증자 -->
+          <div class="top-user-box">
+            <p class="top-user-title">오늘의 최다 인증자</p>
+            <p id="top-user-info" class="top-user-info">
+              아직 오늘의 최다 인증자가 없습니다.
+            </p>
+          </div>
 
-        <!-- 오늘의 최다 인증자 -->
-        <p id="top-user-info" class="top-user-info">
-          아직 오늘의 최다 인증자가 없습니다.
-        </p>
-
-        <!-- TOP5 순위 박스 -->
-        <div id="rankings-container" class="rankings-container"></div>
+          <!-- 오른쪽: 오늘의 인증 순위 TOP 5 (기존 rankingsContainer 그대로 사용) -->
+          <div id="rankings-container" class="rankings-container"></div>
+        </div>
 
         <!-- 오늘의 인증 카드 목록 -->
         <div id="records-container" class="records-container"></div>
@@ -178,6 +182,7 @@
   <script type="module" src="script.js?v=2"></script>
 </body>
 </html>
+
 
 
 
