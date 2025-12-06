@@ -69,6 +69,11 @@ body.theme-quote {
   padding: 0 12px;      /* 좌우 여백 */
 }
 
+.highlight-step {
+  color: #CD5C5C;      /* 원하는 색상 코드로 변경 가능 */
+  font-weight: 700;    /* 더 강조하고 싶으면 유지 */
+}
+
 /* 화면(view) 공통 */
 .view {
   display: none;
@@ -564,6 +569,7 @@ button:active {
 body.admin-selection-mode .record-select {
   display: inline-block;
 }
+
 
 
 
