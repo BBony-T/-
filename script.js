@@ -322,13 +322,17 @@ async function renderRecords() {
 
   // 최다 인증자 표시
   if (!records.length) {
-    topUserInfo.innerHTML = "아직 오늘의 최다 인증자가 없습니다.";
+    // 아무도 없을 때
+    topUserInfo.textContent = "아직 인증자가 없습니다.";
   } else if (topNickname) {
+    // 👑 + 닉네임 + 횟수만 깔끔하게 표시
     topUserInfo.innerHTML = `
       <span class="crown-icon">👑</span>
-      오늘의 최다 인증자: <strong>${topNickname}</strong> (${topCount}회)
+      <span class="top-user-nickname">${topNickname}</span>
+      <span class="top-user-count">${topCount}회</span>
     `;
   }
+
 
   // TOP5 순위 박스
   rankingsContainer.innerHTML = "";
@@ -1068,6 +1072,7 @@ async function init() {
 
 // DOMContentLoaded 시점에 init 실행
 document.addEventListener("DOMContentLoaded", init);
+
 
 
 
