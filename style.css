@@ -128,6 +128,7 @@ body.theme-quote {
   color: #CD5C5C;
   line-height: 1.5;
   font-weight: 600;
+  white-space: pre-line;   /* ← 이 줄 추가 */
 }
 
 .random-message-author {
@@ -569,6 +570,7 @@ button:active {
 body.admin-selection-mode .record-select {
   display: inline-block;
 }
+
 
 
 
