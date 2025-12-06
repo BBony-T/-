@@ -719,7 +719,7 @@ async function loadRandomMessagesFromSheet() {
   }
 
   try {
-    const res = await fetch(SHEETS_CSV_URL + "?t=" + Date.now());
+    const res = await fetch(`${SHEETS_CSV_URL}&cache=${Date.now()}`);
     const text = await res.text();
     let rows = parseCsv(text);
 
@@ -1057,6 +1057,7 @@ document.addEventListener("DOMContentLoaded", init);
 
 // DOMContentLoaded 시점에 init 실행
 document.addEventListener("DOMContentLoaded", init);
+
 
 
 
