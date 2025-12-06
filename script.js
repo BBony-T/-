@@ -1017,6 +1017,8 @@ async function init() {
     const nickname = nicknameInput.value.trim();
     const message  = messageInput.value.trim();
     const imageDataUrl = lastCapturedImageDataUrl || null;
+    // 🔹 submit 버튼 찾기 (중복 클릭 방지용)
+    const submitBtn = certifyFormEl.querySelector('button[type="submit"]');
 
     console.log("📸 imageDataUrl 존재 여부:", !!imageDataUrl);
 
@@ -1024,7 +1026,12 @@ async function init() {
       alert("닉네임과 인증 문구를 모두 입력해 주세요.");
       return;
     }
-
+    // 🔒 여기서 버튼 잠그기
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = "저장 중...";
+    }
+    
     try {
       console.log("🔥 addCertificationToFirebase 호출 직전");
       await addCertificationToFirebase(
@@ -1052,11 +1059,10 @@ async function init() {
   });
 }
 
-document.addEventListener("DOMContentLoaded", init);
-
 
 // DOMContentLoaded 시점에 init 실행
 document.addEventListener("DOMContentLoaded", init);
+
 
 
 
