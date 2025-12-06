@@ -201,11 +201,6 @@ async function addCertificationToFirebase(
   return docRef.id;
 }
 
-
-
-
-
-
     // 3) 사진이 있는 경우 Storage 업로드 + URL 업데이트
     /*
     if (imageDataUrl) {
@@ -265,8 +260,6 @@ async function deleteRecordById(docId, imagePath) {
     }
   }
 }
-
-
 
 // 현재 로그인한 유저가 관리자 이메일인지 체크
 function isCurrentUserAdmin() {
@@ -717,7 +710,10 @@ function mapTypeToCategoryKey(type) {
 
 async function loadRandomMessagesFromSheet() {
   if (!SHEETS_CSV_URL || SHEETS_CSV_URL.trim() === "") {
-    useCustomMessagesOnly();
+    // 시트 URL이 없으면 그냥 비워둔 채로 상태만 표시
+    randomMessages.missions = [];
+    randomMessages.cheers  = [];
+    randomMessages.quotes  = [];
     showRandomMessage();
     return;
   }
@@ -789,14 +785,17 @@ async function loadRandomMessagesFromSheet() {
       randomMessages.missions.length +
       randomMessages.cheers.length +
       randomMessages.quotes.length;
-    if (!totalCount) {
-      useCustomMessagesOnly();
-    }
+
+  // 이제는 시트에 아무 것도 없으면 그냥 "문구 없음"만 표시하도록 두고,
+  // 커스텀 문구는 더 이상 사용하지 않는다.
 
     showRandomMessage();
   } catch (error) {
     console.error("Failed to load CSV:", error);
-    useCustomMessagesOnly();
+    // 에러가 나면 배열을 비워두고 "문구 없음" 상태만 표시
+    randomMessages.missions = [];
+    randomMessages.cheers  = [];
+    randomMessages.quotes  = [];
     showRandomMessage();
   }
 }
@@ -1055,4 +1054,5 @@ document.addEventListener("DOMContentLoaded", init);
 
 // DOMContentLoaded 시점에 init 실행
 document.addEventListener("DOMContentLoaded", init);
+
 
