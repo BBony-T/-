@@ -139,7 +139,7 @@ body.theme-quote {
   color: #555;
   margin-top: 20px;
   margin-bottom: 0px;
-  pading-top: 12px; 
+  padding-top: 12px; 
   border-top: 1.5px dashed #cfcfcf;
   line-height: 1.5;
 }
@@ -564,6 +564,7 @@ button:active {
 body.admin-selection-mode .record-select {
   display: inline-block;
 }
+
 
 
 
